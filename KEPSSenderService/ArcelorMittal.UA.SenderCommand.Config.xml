@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ApplicationConfiguration
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ua="http://opcfoundation.org/UA/2008/02/Types.xsd"
+  xmlns="http://opcfoundation.org/UA/SDK/Configuration.xsd"
+>
+	<ApplicationName>ArcelorMittal.UA.SenderCommand</ApplicationName>
+	<ApplicationUri>urn:localhost/UA/SenderCommand</ApplicationUri>
+	<ProductUri>urn:ArcelorMittal/UA/SenderCommand</ProductUri>
+	<ApplicationType>Client_1</ApplicationType>
+	<SecurityConfiguration>
+		<ApplicationCertificate>
+			<StoreName>ArcelorMittal</StoreName>
+			<StoreLocation>LocalMachine</StoreLocation>
+			<SubjectName>ArcelorMittal.UA.SenderCommand</SubjectName>
+		</ApplicationCertificate>
+		<TrustedIssuerCertificates>
+			<StoreName>UA Certificate Authorities</StoreName>
+			<StoreLocation>LocalMachine</StoreLocation>
+			<TrustedCertificates>
+				<CertificateIdentifier>
+					<StoreName>ArcelorMittal</StoreName>
+					<StoreLocation>LocalMachine</StoreLocation>
+					<SubjectName>ArcelorMittal.UA.SenderCommand</SubjectName>
+				</CertificateIdentifier>
+			</TrustedCertificates>
+		</TrustedIssuerCertificates>
+		<TrustedPeerCertificates>
+			<StoreName>UA Applications</StoreName>
+			<StoreLocation>LocalMachine</StoreLocation>
+			<TrustedCertificates>
+				<CertificateIdentifier>
+					<StoreName>ArcelorMittal</StoreName>
+					<StoreLocation>LocalMachine</StoreLocation>
+					<SubjectName>ArcelorMittal.UA.SenderCommand</SubjectName>
+				</CertificateIdentifier>
+			</TrustedCertificates>
+		</TrustedPeerCertificates>
+		<NonceLength>32</NonceLength>
+		<RevocationMode>NoCheck</RevocationMode>
+		<InvalidCertificateDirectory>%CommonApplicationData%\OPC Foundation\RejectedCertificates</InvalidCertificateDirectory>
+	</SecurityConfiguration>
+	<TransportConfigurations>
+		<TransportConfiguration>
+			<UriScheme>http</UriScheme>
+			<TypeName>Opc.Ua.Bindings.UaSoapXmlBinding</TypeName>
+		</TransportConfiguration>
+		<TransportConfiguration>
+			<UriScheme>opc.tcp</UriScheme>
+			<TypeName>Opc.Ua.Bindings.UaTcpBinding</TypeName>
+		</TransportConfiguration>
+	</TransportConfigurations>
+	<TransportQuotas>
+		<OperationTimeout>600000</OperationTimeout>
+		<MaxStringLength>10485760</MaxStringLength>
+		<MaxByteStringLength>4194304</MaxByteStringLength>
+		<MaxArrayLength>655350</MaxArrayLength>
+		<MaxMessageSize>41943040</MaxMessageSize>
+		<MaxBufferSize>65535</MaxBufferSize>
+		<ChannelLifetime>300000</ChannelLifetime>
+		<SecurityTokenLifetime>60000</SecurityTokenLifetime>
+		<!--<SecurityTokenLifetime>86400000</SecurityTokenLifetime>-->
+	</TransportQuotas>
+	<ClientConfiguration>
+		<DefaultSessionTimeout>60000</DefaultSessionTimeout>
+		<WellKnownDiscoveryUrls>
+			<ua:String>opc.tcp://{0}:49320</ua:String>
+			<ua:String>http://{0}:52601/UADiscovery</ua:String>
+			<ua:String>http://{0}/UADiscovery/Default.svc</ua:String>
+		</WellKnownDiscoveryUrls>
+		<DiscoveryServers></DiscoveryServers>
+		<EndpointCacheFilePath>ArcelorMittal.UA.SenderCommand.Endpoints.xml</EndpointCacheFilePath>
+		<MinSubscriptionLifetime>10000</MinSubscriptionLifetime>
+	</ClientConfiguration>
+	<TraceConfiguration>
+		<OutputFilePath>%MyDocuments%\ArcelorMittal.UA.SenderCommand.log.txt</OutputFilePath>
+		<DeleteOnLoad>true</DeleteOnLoad>
+		<TraceMasks>515</TraceMasks>
+	</TraceConfiguration>
+</ApplicationConfiguration>

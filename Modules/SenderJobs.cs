@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Security.Principal;
 using System.Reflection;
+using CommonEventSender;
+using Opc.Ua;
+using Opc.Ua.Client;
 
 namespace KEPServerSenderService
 {
@@ -44,7 +46,7 @@ namespace KEPServerSenderService
         /// </summary>
         private System.Timers.Timer m_SenderTimer;
 
-        private ProductInfo wmiProductInfo;
+        private KEPSenderServiceProductInfo wmiProductInfo;
         private bool fJobStarted = false;
         private string OdataServiceUrl;
         #endregion
@@ -112,12 +114,12 @@ namespace KEPServerSenderService
             int sendCommandFrequencyInSeconds = int.Parse(System.Configuration.ConfigurationManager.AppSettings[cSendCommandFrequencyName]);
             OdataServiceUrl = System.Configuration.ConfigurationManager.AppSettings[cOdataService];
 
-            wmiProductInfo = new ProductInfo(cServiceTitle,
-                                             Environment.MachineName,
-                                             Assembly.GetExecutingAssembly().GetName().Version.ToString(),
-                                             DateTime.Now,
-                                             sendCommandFrequencyInSeconds,
-                                             OdataServiceUrl);
+            wmiProductInfo = new KEPSenderServiceProductInfo(cServiceTitle,
+                                                             Environment.MachineName,
+                                                             Assembly.GetExecutingAssembly().GetName().Version.ToString(),
+                                                             DateTime.Now,
+                                                             sendCommandFrequencyInSeconds,
+                                                             OdataServiceUrl);
 
             m_SenderTimer = new System.Timers.Timer();
             m_SenderTimer.Interval = sendCommandFrequencyInSeconds * 1000; // seconds to milliseconds
@@ -179,13 +181,13 @@ namespace KEPServerSenderService
             m_SenderTimer.Stop();
 
             string lLastError = "";
-            List<commandProps> JobData = new List<commandProps>();
+            List<SenderJobProps> JobData = new List<SenderJobProps>();
             try
             {
-                ServicedbData lDbData = new ServicedbData(OdataServiceUrl);
-                lDbData.fillJobData(ref JobData);
+                KEPSSenderdbData lDbData = new KEPSSenderdbData(OdataServiceUrl);
+                //lDbData.fillJobData(JobData);
 
-                foreach (commandProps job in JobData)
+                foreach (SenderJobProps job in JobData)
                 {
                     ;
                     
@@ -202,6 +204,69 @@ namespace KEPServerSenderService
             senderMonitorEvent.sendMonitorEvent(vpEventLog, string.Format("Send command is done. {0} tasks", JobData.Count), EventLogEntryType.Information);
 
             m_SenderTimer.Start();
+        }
+
+        private void WriteToKEPServer()
+        {
+            // Step 1 -- Connect to UA server
+            string discoveryUrl = "opc.tcp://127.0.0.1:49320";
+
+            using (Session AMSession = ClientUtils.CreateSession(discoveryUrl, "ArcelorMittal.UA.SenderCommand"))
+            {
+                // Step 2 -- Read the value of a node representing a PI Point data under the hood
+                NodeId nodeToRead = new NodeId(@"Channel1.Device1.Tag1", 2);
+                Node node = AMSession.NodeCache.Find(nodeToRead) as Node;
+
+                if (node != null)
+                {
+                    DataValue value = AMSession.ReadValue(nodeToRead);
+
+                    WriteValue Wvalue = new WriteValue();
+                    Wvalue.NodeId = nodeToRead;
+                    Wvalue.AttributeId = Attributes.Value;
+
+                    if ((node.NodeClass & (NodeClass.Variable | NodeClass.VariableType)) == 0)
+                    {
+                        Wvalue.AttributeId = Attributes.DisplayName;
+                    }
+
+                    Wvalue.IndexRange = null;
+                    Wvalue.Value = value;
+                    Wvalue.Value.Value = (UInt16)27;
+
+                    WriteValueCollection nodesToWrite = new WriteValueCollection();
+                    nodesToWrite.Add(Wvalue);
+
+                    StatusCodeCollection results = null;
+                    DiagnosticInfoCollection diagnosticInfos = null;
+
+                    ResponseHeader responseHeader = AMSession.Write(
+                        null,
+                        nodesToWrite,
+                        out results,
+                        out diagnosticInfos);
+
+                    Session.ValidateResponse(results, nodesToWrite);
+                    Session.ValidateDiagnosticInfos(diagnosticInfos, nodesToWrite);
+
+                    if (results[0].Code == 0)
+                    {
+                        Console.WriteLine("Good job");
+                    }
+                    else
+                    {
+                        Console.WriteLine(String.Format("Code {0} text {1}", results[0].Code, results[0].ToString()));
+                    }
+                    Console.WriteLine("Press Enter to finish the program \n");
+                }
+                else
+                {
+                    Console.WriteLine("Item not found");
+                }
+                Console.ReadKey();
+                // Step 3 -- Clean up
+                AMSession.Close();
+            }
         }
         #endregion
     }
