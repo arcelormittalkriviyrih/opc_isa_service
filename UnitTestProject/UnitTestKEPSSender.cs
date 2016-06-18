@@ -1,8 +1,5 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using KEPServerSenderService;
-using System.Linq;
-using System.Collections.Generic;
 
 namespace KEPServerSenderService.Tests
 {

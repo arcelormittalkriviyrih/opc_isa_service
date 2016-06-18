@@ -78,7 +78,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="ProjectInstaller.resx">
@@ -92,7 +94,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ArcelorMittal.UA.SenderCommand.Config.xml" />
+    <Content Include="ArcelorMittal.UA.SenderCommand.Config.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

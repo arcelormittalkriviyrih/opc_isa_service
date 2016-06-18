@@ -264,7 +264,7 @@ namespace KEPServerSenderService
             {
                 endpoint.UpdateFromServer(bindingFactory);
 
-                Console.Error.WriteLine("Updated endpoint description for url: {0}\n", endpointDescription.EndpointUrl);
+                //Console.Error.WriteLine("Updated endpoint description for url: {0}\n", endpointDescription.EndpointUrl);
 
                 endpointDescription = endpoint.Description;
                 endpointConfiguration = endpoint.Configuration;
