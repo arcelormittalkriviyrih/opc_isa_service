@@ -1,0 +1,34 @@
+﻿
+Running a transacted installation.
+
+Beginning the Install phase of the installation.
+See the contents of the log file for the c:\ArcelorMittal\Development\OPC server\KEPServerSender\KEPSSenderService\bin\Debug\KEPSSenderService.exe assembly's progress.
+The file is located at c:\ArcelorMittal\Development\OPC server\KEPServerSender\KEPSSenderService\bin\Debug\KEPSSenderService.InstallLog.
+
+An exception occurred during the Install phase.
+System.ComponentModel.Win32Exception: Access is denied
+
+The Rollback phase of the installation is beginning.
+See the contents of the log file for the c:\ArcelorMittal\Development\OPC server\KEPServerSender\KEPSSenderService\bin\Debug\KEPSSenderService.exe assembly's progress.
+The file is located at c:\ArcelorMittal\Development\OPC server\KEPServerSender\KEPSSenderService\bin\Debug\KEPSSenderService.InstallLog.
+
+The Rollback phase completed successfully.
+
+The transacted install has completed.
+
+Running a transacted installation.
+
+Beginning the Install phase of the installation.
+See the contents of the log file for the c:\ArcelorMittal\Development\OPC server\KEPServerSender\KEPSSenderService\bin\Debug\KEPSSenderService.exe assembly's progress.
+The file is located at c:\ArcelorMittal\Development\OPC server\KEPServerSender\KEPSSenderService\bin\Debug\KEPSSenderService.InstallLog.
+
+An exception occurred during the Install phase.
+System.ComponentModel.Win32Exception: Access is denied
+
+The Rollback phase of the installation is beginning.
+See the contents of the log file for the c:\ArcelorMittal\Development\OPC server\KEPServerSender\KEPSSenderService\bin\Debug\KEPSSenderService.exe assembly's progress.
+The file is located at c:\ArcelorMittal\Development\OPC server\KEPServerSender\KEPSSenderService\bin\Debug\KEPSSenderService.InstallLog.
+
+The Rollback phase completed successfully.
+
+The transacted install has completed.

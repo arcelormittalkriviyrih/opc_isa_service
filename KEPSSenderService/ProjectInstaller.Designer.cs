@@ -28,32 +28,32 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.serviceProcessInstaller1 = new System.ServiceProcess.ServiceProcessInstaller();
-            this.serviceInstaller1 = new System.ServiceProcess.ServiceInstaller();
-            // 
-            // serviceProcessInstaller1
-            // 
-            this.serviceProcessInstaller1.Password = null;
-            this.serviceProcessInstaller1.Username = null;
-            // 
-            // serviceInstaller1
-            // 
-            this.serviceInstaller1.Description = "KEP Server sender service for Arcelor Mittal";
-            this.serviceInstaller1.DisplayName = "Arcelor Mittal KEP Server sender Service";
-            this.serviceInstaller1.ServiceName = "ArcelorMittal.KEPServerSender";
-            this.serviceInstaller1.StartType = System.ServiceProcess.ServiceStartMode.Automatic;
-            // 
-            // ProjectInstaller
-            // 
-            this.Installers.AddRange(new System.Configuration.Install.Installer[] {
-            this.serviceProcessInstaller1,
-            this.serviceInstaller1});
+			this.serviceProcessInstaller = new System.ServiceProcess.ServiceProcessInstaller();
+			this.serviceInstaller = new System.ServiceProcess.ServiceInstaller();
+			// 
+			// serviceProcessInstaller
+			// 
+			this.serviceProcessInstaller.Password = null;
+			this.serviceProcessInstaller.Username = null;
+			// 
+			// serviceInstaller
+			// 
+			this.serviceInstaller.Description = "KEP Server sender service for Arcelor Mittal";
+			this.serviceInstaller.DisplayName = "Arcelor Mittal KEP Server sender Service";
+			this.serviceInstaller.ServiceName = "ArcelorMittal.KEPServerSender";
+			this.serviceInstaller.StartType = System.ServiceProcess.ServiceStartMode.Automatic;
+			// 
+			// ProjectInstaller
+			// 
+			this.Installers.AddRange(new System.Configuration.Install.Installer[] {
+            this.serviceProcessInstaller,
+            this.serviceInstaller});
 
         }
 
         #endregion
 
-        private System.ServiceProcess.ServiceProcessInstaller serviceProcessInstaller1;
-        private System.ServiceProcess.ServiceInstaller serviceInstaller1;
+        private System.ServiceProcess.ServiceProcessInstaller serviceProcessInstaller;
+        private System.ServiceProcess.ServiceInstaller serviceInstaller;
     }
 }

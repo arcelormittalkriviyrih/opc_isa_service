@@ -7,30 +7,40 @@ namespace KEPServerSenderService
 {
 	public partial class SenderService : ServiceBase
 	{
-		private SenderJobs pJobs;
+		#region Fields
+
+		/// <summary>	The sender jobs. </summary>
+		private SenderJobs senderJobs; 
+
+		#endregion
 
         #region Constructor
 
+        /// <summary>	Default constructor. </summary>
         public SenderService()
 		{
 			InitializeComponent();
 
             // Set up a timer to trigger every print task frequency.
-            pJobs = new SenderJobs();
+            this.senderJobs = new SenderJobs();
         }
 
         #endregion
 
         #region Methods
 
+        /// <summary>	Executes the start action. </summary>
+        ///
+        /// <param name="args">	Data passed by the start command. </param>
         protected override void OnStart(string[] args)
 		{
-            pJobs.StartJob();
+			this.senderJobs.StartJob();
         }
 
+		/// <summary>	Executes the stop action. </summary>
 		protected override void OnStop()
 		{
-            pJobs.StopJob();
+			this.senderJobs.StopJob();
         }
         #endregion
     }

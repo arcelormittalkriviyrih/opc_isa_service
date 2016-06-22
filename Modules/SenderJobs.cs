@@ -103,6 +103,7 @@ namespace KEPServerSenderService
         }
 
         #endregion
+
         /// <summary>
         /// Status of processing of queue
         /// </summary>
@@ -116,6 +117,7 @@ namespace KEPServerSenderService
 
         #region Constructor
 
+        /// <summary>	Default constructor. </summary>
         public SenderJobs()
         {
             // Set up a timer to trigger every send command frequency.
@@ -134,13 +136,16 @@ namespace KEPServerSenderService
             m_SenderTimer.Interval = sendCommandFrequencyInSeconds * 1000; // seconds to milliseconds
             m_SenderTimer.Elapsed += new System.Timers.ElapsedEventHandler(this.OnSenderTimer);
 
-            senderMonitorEvent.sendMonitorEvent(vpEventLog, string.Format("Send Command Frequncy = {0}", sendCommandFrequencyInSeconds), EventLogEntryType.Information);
+            SenderMonitorEvent.sendMonitorEvent(vpEventLog, string.Format("Send Command Frequncy = {0}", sendCommandFrequencyInSeconds), EventLogEntryType.Information);
         }
 
         #endregion
 
         #region Destructor
 
+        /// <summary>
+        /// Constructor that prevents a default instance of this class from being created.
+        /// </summary>
         ~ SenderJobs()
         {
             if (m_EventLog != null)
@@ -149,6 +154,7 @@ namespace KEPServerSenderService
                 m_EventLog.Dispose();
             }
         }
+
         #endregion
 
         #region Methods
@@ -158,11 +164,11 @@ namespace KEPServerSenderService
         /// </summary>
         public void StartJob()
         {
-            senderMonitorEvent.sendMonitorEvent(vpEventLog, "Starting send command service...", EventLogEntryType.Information);
+            SenderMonitorEvent.sendMonitorEvent(vpEventLog, "Starting send command service...", EventLogEntryType.Information);
 
             m_SenderTimer.Start();
 
-            senderMonitorEvent.sendMonitorEvent(vpEventLog, "Send command service has been started", EventLogEntryType.Information);
+            SenderMonitorEvent.sendMonitorEvent(vpEventLog, "Send command service has been started", EventLogEntryType.Information);
             fJobStarted = true;
         }
 
@@ -171,13 +177,13 @@ namespace KEPServerSenderService
         /// </summary>
         public void StopJob()
         {
-            senderMonitorEvent.sendMonitorEvent(vpEventLog, "Stopping send command service...", EventLogEntryType.Information);
+            SenderMonitorEvent.sendMonitorEvent(vpEventLog, "Stopping send command service...", EventLogEntryType.Information);
 
             //stop timers if working
             if (m_SenderTimer.Enabled)
                 m_SenderTimer.Stop();
 
-            senderMonitorEvent.sendMonitorEvent(vpEventLog, "Send command service has been stopped", EventLogEntryType.Information);
+            SenderMonitorEvent.sendMonitorEvent(vpEventLog, "Send command service has been stopped", EventLogEntryType.Information);
             fJobStarted = false;
         }
 
@@ -186,10 +192,10 @@ namespace KEPServerSenderService
         /// </summary>
         public void OnSenderTimer(object sender, System.Timers.ElapsedEventArgs args)
         {
-            senderMonitorEvent.sendMonitorEvent(vpEventLog, "Monitoring the send command activity", EventLogEntryType.Information);
+            SenderMonitorEvent.sendMonitorEvent(vpEventLog, "Monitoring the send command activity", EventLogEntryType.Information);
             m_SenderTimer.Stop();
 
-            string lLastError = "";
+			string lLastError = string.Empty;
             KEPSSenderdbData senderDbData = new KEPSSenderdbData(OdataServiceUrl);
             List<SenderJobProps> JobData = senderDbData.fillSenderJobData();
             try
@@ -228,12 +234,12 @@ namespace KEPServerSenderService
             catch (Exception ex)
             {
                 lLastError = "Get data from DB. Error: " + ex.ToString();
-                senderMonitorEvent.sendMonitorEvent(vpEventLog, lLastError, EventLogEntryType.Error);
+                SenderMonitorEvent.sendMonitorEvent(vpEventLog, lLastError, EventLogEntryType.Error);
                 wmiProductInfo.LastServiceError = string.Format("{0}. On {1}", lLastError, DateTime.Now);
             }
             wmiProductInfo.SendCommandsCount += JobData.Count;
             wmiProductInfo.PublishInfo();
-            senderMonitorEvent.sendMonitorEvent(vpEventLog, string.Format("Send command is done. {0} tasks", JobData.Count), EventLogEntryType.Information);
+            SenderMonitorEvent.sendMonitorEvent(vpEventLog, string.Format("Send command is done. {0} tasks", JobData.Count), EventLogEntryType.Information);
 
             m_SenderTimer.Start();
         }
@@ -369,13 +375,13 @@ namespace KEPServerSenderService
                     }
                     else
                     {
-                        senderMonitorEvent.sendMonitorEvent(vpEventLog, String.Format("Can not send command to KEP Server. ErrorCode {0} ErrorText {1}", results[0].Code, results[0].ToString()), EventLogEntryType.Error);
+                        SenderMonitorEvent.sendMonitorEvent(vpEventLog, String.Format("Can not send command to KEP Server. ErrorCode {0} ErrorText {1}", results[0].Code, results[0].ToString()), EventLogEntryType.Error);
                         return false;
                     }
                 }
                 else
                 {
-                    senderMonitorEvent.sendMonitorEvent(vpEventLog, String.Format("Can not convert command value: {0}", job.CommandRule), EventLogEntryType.Error);
+                    SenderMonitorEvent.sendMonitorEvent(vpEventLog, String.Format("Can not convert command value: {0}", job.CommandRule), EventLogEntryType.Error);
                     return false;
                 }
             }
@@ -405,10 +411,15 @@ namespace KEPServerSenderService
     public class KEPSSenderdbData
     {
         private string webServiceUrl;
-        public KEPSSenderdbData(string aWebServiceUrl)
+
+        /// <summary>	Constructor. </summary>
+        ///
+        /// <param name="webServiceUrl">	URL of the web service. </param>
+        public KEPSSenderdbData(string webServiceUrl)
         {
-            webServiceUrl = aWebServiceUrl;
+            this.webServiceUrl = webServiceUrl;
         }
+
         /// <summary>
         /// Processing of input queue and generation of list of KEP Server commands
         /// </summary>
