@@ -22,12 +22,12 @@ namespace KEPServerSenderService
         /// <summary>
         /// The name of the system event source used by this service.
         /// </summary>
-        private const string cSystemEventSourceName = "ArcelorMittal.KEPSSenderService.EventSource";
+        private const string cSystemEventSourceName = "AM.KEPSSenderService.EventSource";
 
         /// <summary>
         /// The name of the system event log used by this service.
         /// </summary>
-        private const string cSystemEventLogName = "KEPSSenderService.ArcelorMittal.Log";
+        private const string cSystemEventLogName = "AM.KEPSSenderService.Log";
 
         /// <summary>
         /// The name of the configuration parameter for the send commands frequency in seconds.
