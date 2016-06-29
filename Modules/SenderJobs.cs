@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Security.Principal;
 using System.Reflection;
+using System.Globalization;
 using CommonEventSender;
 using Opc.Ua;
 using Opc.Ua.Client;
@@ -251,6 +252,9 @@ namespace KEPServerSenderService
 
             if (rightBracketPos > 0)
             {
+                NumberFormatInfo nfi = CultureInfo.CurrentCulture.NumberFormat;
+                nfi.NumberDecimalSeparator = ".";
+
                 string sTypeValue = elementValue.Substring(1, rightBracketPos - 1).ToUpper();
                 string sValue = elementValue.Substring(rightBracketPos + 1);
                 try
@@ -261,7 +265,7 @@ namespace KEPServerSenderService
                             resultValue = bool.Parse(sValue);
                             break;
                         case "DOUBLE":
-                            resultValue = double.Parse(sValue);
+                            resultValue = double.Parse(sValue, nfi);
                             break;
                         case "LONG":
                             resultValue = int.Parse(sValue);
@@ -276,7 +280,7 @@ namespace KEPServerSenderService
                             resultValue = uint.Parse(sValue);
                             break;
                         case "FLOAT":
-                            resultValue = float.Parse(sValue);
+                            resultValue = float.Parse(sValue, nfi);
                             break;
                         case "BYTE":
                             resultValue = byte.Parse(sValue);
