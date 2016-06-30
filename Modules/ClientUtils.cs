@@ -2,9 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Security.Cryptography.X509Certificates;
-
+using CommonEventSender;
 using Opc.Ua;
 using Opc.Ua.Client;
+using System.Diagnostics;
+using System.IO;
+using System.Reflection;
 
 namespace KEPServerSenderService
 {
@@ -13,6 +16,7 @@ namespace KEPServerSenderService
     /// </summary>
     public static class ClientUtils
     {
+        public static EventLog eventLog;
         /// <summary>
         /// Finds the endpoint that best matches the current settings.
         /// </summary>
@@ -101,7 +105,7 @@ namespace KEPServerSenderService
             {
                 id = new CertificateIdentifier();
                 id.StoreType = CertificateStoreType.Windows;
-                id.StorePath = "LocalMachine\\ArcelorMittal";
+                id.StorePath = "LocalMachine\\My";
                 id.SubjectName = configuration.ApplicationName;
             }
 
@@ -111,6 +115,7 @@ namespace KEPServerSenderService
             if (certificate != null)
             {
                 //This UA application already has an instance certificate
+                SaveCertificate(certificate);
                 return;
             }
 
@@ -210,6 +215,21 @@ namespace KEPServerSenderService
 
             // tell the certificate validator about the new certificate.
             configuration.CertificateValidator.Update(configuration.SecurityConfiguration);
+            SaveCertificate(certificate);
+        }
+
+        static void SaveCertificate(X509Certificate2 certificate)
+        {
+            string CertificateFileName = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\am_cert.cer";
+            if (!File.Exists(CertificateFileName))
+            {
+                byte[] certFile = certificate.Export(X509ContentType.Cert);
+                using (FileStream fs = new FileStream(CertificateFileName, FileMode.Create))
+                {
+                    fs.Write(certFile, 0, certFile.Length);
+                    fs.Close();
+                }
+            }
         }
 
         /// <summary>
@@ -223,6 +243,7 @@ namespace KEPServerSenderService
         static void CertificateValidator_CertificateValidation(CertificateValidator validator, CertificateValidationEventArgs e)
         {
             e.Accept = true;
+            SenderMonitorEvent.sendMonitorEvent(eventLog, String.Format("{0}. WARNING: Accepting Untrusted Certificate: {1}", e.Error, e.Certificate.Subject), EventLogEntryType.Warning);
             //Console.Error.WriteLine(e.Error);
             //Console.Error.WriteLine("WARNING: Accepting Untrusted Certificate: {0}", e.Certificate.Subject);
         }
@@ -243,7 +264,7 @@ namespace KEPServerSenderService
             // create the endpoint description
             EndpointDescription endpointDescription = ClientUtils.SelectEndpoint(discoveryUrl, false);
             endpointDescription.SecurityMode = MessageSecurityMode.None;
-            //endpointDescription.SecurityPolicyUri = @"http://opcfoundation.org/UA/SecurityPolicy#None";
+            endpointDescription.SecurityPolicyUri = @"http://opcfoundation.org/UA/SecurityPolicy#None";
 
             // create the endpoint configuration
             EndpointConfiguration endpointConfiguration = EndpointConfiguration.Create(configuration);

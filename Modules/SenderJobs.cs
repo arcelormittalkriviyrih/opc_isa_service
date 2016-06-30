@@ -90,6 +90,7 @@ namespace KEPServerSenderService
                         }
                         m_EventLog.Source = cSystemEventSourceName;
                         m_EventLog.Log = lSystemEventLogName;
+                        ClientUtils.eventLog = m_EventLog;
 
                         WindowsIdentity identity = WindowsIdentity.GetCurrent();
                         WindowsPrincipal principal = new WindowsPrincipal(identity);
@@ -252,7 +253,7 @@ namespace KEPServerSenderService
 
             if (rightBracketPos > 0)
             {
-                NumberFormatInfo nfi = CultureInfo.CurrentCulture.NumberFormat;
+                NumberFormatInfo nfi = new NumberFormatInfo();
                 nfi.NumberDecimalSeparator = ".";
 
                 string sTypeValue = elementValue.Substring(1, rightBracketPos - 1).ToUpper();
@@ -379,19 +380,19 @@ namespace KEPServerSenderService
                     }
                     else
                     {
-                        SenderMonitorEvent.sendMonitorEvent(vpEventLog, String.Format("Can not send command to KEP Server. ErrorCode {0} ErrorText {1}", results[0].Code, results[0].ToString()), EventLogEntryType.Error);
+                        SenderMonitorEvent.sendMonitorEvent(vpEventLog, String.Format("Can not send command to KEP Server. ErrorCode: {0}. ErrorText: {1}. Job order ID: {2}", results[0].Code, results[0].ToString(), job.JobOrderID), EventLogEntryType.Error);
                         return false;
                     }
                 }
                 else
                 {
-                    SenderMonitorEvent.sendMonitorEvent(vpEventLog, String.Format("Can not convert command value: {0}", job.CommandRule), EventLogEntryType.Error);
+                    SenderMonitorEvent.sendMonitorEvent(vpEventLog, String.Format("Can not convert command value: {0}. Job order ID: {1}", job.CommandRule, job.JobOrderID), EventLogEntryType.Error);
                     return false;
                 }
             }
             else
             {
-                Console.WriteLine("Item not found");
+                SenderMonitorEvent.sendMonitorEvent(vpEventLog, String.Format("Item not found: {0}. Job order ID: ", job.Command, job.JobOrderID), EventLogEntryType.Error);
                 return false;
             }
         }
