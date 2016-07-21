@@ -243,7 +243,7 @@ namespace KEPServerSenderService
         static void CertificateValidator_CertificateValidation(CertificateValidator validator, CertificateValidationEventArgs e)
         {
             e.Accept = true;
-            SenderMonitorEvent.sendMonitorEvent(eventLog, String.Format("{0}. WARNING: Accepting Untrusted Certificate: {1}", e.Error, e.Certificate.Subject), EventLogEntryType.Warning);
+            //SenderMonitorEvent.sendMonitorEvent(eventLog, String.Format("{0}. WARNING: Accepting Untrusted Certificate: {1}", e.Error, e.Certificate.Subject), EventLogEntryType.Warning);
             //Console.Error.WriteLine(e.Error);
             //Console.Error.WriteLine("WARNING: Accepting Untrusted Certificate: {0}", e.Certificate.Subject);
         }

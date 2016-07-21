@@ -203,43 +203,46 @@ namespace KEPServerSenderService
             try
             {
                 string sendState;
-                // Step 1 -- Connect to UA server
-                //string discoveryUrl = "opc.tcp://127.0.0.1:49320";
-                using (Session AMSession = ClientUtils.CreateSession(OPCServerUrl, "ArcelorMittal.UA.SenderCommand"))
+                if (JobData.Count > 0)
                 {
-                    foreach (SenderJobProps job in JobData)
+                    // Step 1 -- Connect to UA server
+                    //string discoveryUrl = "opc.tcp://127.0.0.1:49320";
+                    using (Session AMSession = ClientUtils.CreateSession(OPCServerUrl, "ArcelorMittal.UA.SenderCommand"))
                     {
-                        try
+                        foreach (SenderJobProps job in JobData)
                         {
-                            if (WriteToKEPServer(AMSession, job))
+                            try
                             {
-                                sendState = "Done";
-                                wmiProductInfo.LastActivityTime = DateTime.Now;
-                            }
-                            else
-                            {
-                                sendState = "Failed";
-                            }
-                            lLastError = String.Format("JobOrderID: {0}. Send to KEP Server element {1} = {2}. Status: {3}", job.JobOrderID, job.Command, job.CommandRule, sendState);
+                                if (WriteToKEPServer(AMSession, job))
+                                {
+                                    sendState = "Done";
+                                    wmiProductInfo.LastActivityTime = DateTime.Now;
+                                }
+                                else
+                                {
+                                    sendState = "Failed";
+                                }
+                                lLastError = String.Format("JobOrderID: {0}. Send to KEP Server element {1} = {2}. Status: {3}", job.JobOrderID, job.Command, job.CommandRule, sendState);
 
-                            if (sendState == "Done")
-                            {
-                                Requests.updateJobStatus(OdataServiceUrl, job.JobOrderID, sendState);
+                                if (sendState == "Done")
+                                {
+                                    Requests.updateJobStatus(OdataServiceUrl, job.JobOrderID, sendState);
+                                }
+                                else if (sendState == "Failed")
+                                {
+                                    wmiProductInfo.LastServiceError = string.Format("{0}. On {1}", lLastError, DateTime.Now);
+                                }
                             }
-                            else if (sendState == "Failed")
+                            catch (Exception ex)
                             {
-                                wmiProductInfo.LastServiceError = string.Format("{0}. On {1}", lLastError, DateTime.Now);
+                                lLastError = "Error sending command: " + ex.ToString();
+                                SenderMonitorEvent.sendMonitorEvent(vpEventLog, lLastError, EventLogEntryType.Error);
                             }
                         }
-                        catch (Exception ex)
-                        {
-                            lLastError = "Error sending command: " + ex.ToString();
-                            SenderMonitorEvent.sendMonitorEvent(vpEventLog, lLastError, EventLogEntryType.Error);                            
-                        }
+                        // Step 3 -- Clean up
+                        AMSession.Close();
                     }
-                    // Step 3 -- Clean up
-                    AMSession.Close();
-                }
+                }                
             }
             catch (Exception ex)
             {
