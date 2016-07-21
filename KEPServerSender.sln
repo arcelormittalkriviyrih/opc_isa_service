@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KEPSSenderService", "KEPSSe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestProject", "UnitTestProject\UnitTestProject.csproj", "{D2AAC3B8-9B3E-4B5B-9FE4-11211A0DF49C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AMServicesLibrary", "..\..\Print service\PrintWindowsService\ServicesLib\AMServicesLibrary.csproj", "{0BC81C48-D64E-40C8-9BEE-4BAECF6FE0C1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AMServicesLibrary", "..\Print_service\ServicesLib\AMServicesLibrary.csproj", "{0BC81C48-D64E-40C8-9BEE-4BAECF6FE0C1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

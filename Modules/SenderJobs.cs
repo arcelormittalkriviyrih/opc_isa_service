@@ -148,7 +148,7 @@ namespace KEPServerSenderService
         /// <summary>
         /// Constructor that prevents a default instance of this class from being created.
         /// </summary>
-        ~ SenderJobs()
+        ~SenderJobs()
         {
             if (m_EventLog != null)
             {
@@ -197,7 +197,7 @@ namespace KEPServerSenderService
             SenderMonitorEvent.sendMonitorEvent(vpEventLog, "Monitoring the send command activity", EventLogEntryType.Information);
             m_SenderTimer.Stop();
 
-			string lLastError = string.Empty;
+            string lLastError = string.Empty;
             KEPSSenderdbData senderDbData = new KEPSSenderdbData(OdataServiceUrl);
             List<SenderJobProps> JobData = senderDbData.fillSenderJobData();
             try
@@ -209,24 +209,32 @@ namespace KEPServerSenderService
                 {
                     foreach (SenderJobProps job in JobData)
                     {
-                        if (WriteToKEPServer(AMSession, job))
+                        try
                         {
-                            sendState = "Done";
-                            wmiProductInfo.LastActivityTime = DateTime.Now;
-                        }
-                        else
-                        {
-                            sendState = "Failed";
-                        }
-                        lLastError = String.Format("JobOrderID: {0}. Send to KEP Server element {1} = {2}. Status: {3}", job.JobOrderID, job.Command, job.CommandRule, sendState);
+                            if (WriteToKEPServer(AMSession, job))
+                            {
+                                sendState = "Done";
+                                wmiProductInfo.LastActivityTime = DateTime.Now;
+                            }
+                            else
+                            {
+                                sendState = "Failed";
+                            }
+                            lLastError = String.Format("JobOrderID: {0}. Send to KEP Server element {1} = {2}. Status: {3}", job.JobOrderID, job.Command, job.CommandRule, sendState);
 
-                        if (sendState == "Done")
-                        {
-                            Requests.updateJobStatus(OdataServiceUrl, job.JobOrderID, sendState);
+                            if (sendState == "Done")
+                            {
+                                Requests.updateJobStatus(OdataServiceUrl, job.JobOrderID, sendState);
+                            }
+                            else if (sendState == "Failed")
+                            {
+                                wmiProductInfo.LastServiceError = string.Format("{0}. On {1}", lLastError, DateTime.Now);
+                            }
                         }
-                        else if (sendState == "Failed")
+                        catch (Exception ex)
                         {
-                            wmiProductInfo.LastServiceError = string.Format("{0}. On {1}", lLastError, DateTime.Now);
+                            lLastError = "Error sending command: " + ex.ToString();
+                            SenderMonitorEvent.sendMonitorEvent(vpEventLog, lLastError, EventLogEntryType.Error);                            
                         }
                     }
                     // Step 3 -- Clean up
@@ -235,7 +243,7 @@ namespace KEPServerSenderService
             }
             catch (Exception ex)
             {
-                lLastError = "Get data from DB. Error: " + ex.ToString();
+                lLastError = "Error getting jobs: " + ex.ToString();
                 SenderMonitorEvent.sendMonitorEvent(vpEventLog, lLastError, EventLogEntryType.Error);
                 wmiProductInfo.LastServiceError = string.Format("{0}. On {1}", lLastError, DateTime.Now);
             }
@@ -292,21 +300,21 @@ namespace KEPServerSenderService
                         case "STRING":
                             resultValue = sValue;
                             break;
-                        /*case "BCD":
-                            resultValue = Parse(sValue);
-                            break;
-                        case "LBCD":
-                            resultValue = bool.Parse(sValue);
-                            break;
-                        case "DATE":
-                            resultValue = bool.Parse(sValue);
-                            break;
-                        case "LLONG":
-                            resultValue = bool.Parse(sValue);
-                            break;
-                        case "QLONG":
-                            resultValue = bool.Parse(sValue);
-                            break;*/
+                            /*case "BCD":
+                                resultValue = Parse(sValue);
+                                break;
+                            case "LBCD":
+                                resultValue = bool.Parse(sValue);
+                                break;
+                            case "DATE":
+                                resultValue = bool.Parse(sValue);
+                                break;
+                            case "LLONG":
+                                resultValue = bool.Parse(sValue);
+                                break;
+                            case "QLONG":
+                                resultValue = bool.Parse(sValue);
+                                break;*/
                     }
                 }
                 catch
@@ -405,7 +413,7 @@ namespace KEPServerSenderService
     {
         public SenderJobProps(int cJobOrderID,
                               string cCommand,
-                              string cCommandRule) : base (cJobOrderID,
+                              string cCommandRule) : base(cJobOrderID,
                                                            cCommand,
                                                            cCommandRule)
         { }
