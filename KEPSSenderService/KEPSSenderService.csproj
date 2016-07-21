@@ -88,7 +88,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\print_service\ServicesLib\AMServicesLibrary.csproj">
+    <ProjectReference Include="ServicesLib\AMServicesLibrary.csproj">
       <Project>{0bc81c48-d64e-40c8-9bee-4baecf6fe0c1}</Project>
       <Name>AMServicesLibrary</Name>
     </ProjectReference>
