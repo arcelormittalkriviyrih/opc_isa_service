@@ -73,7 +73,7 @@ namespace PrintWindowsService
         private string prVersion;
         private DateTime prStartTime;
         private int prPrintTaskFrequencyInSeconds;
-        private int prPingTimeoutInSeconds;
+        //private int prPingTimeoutInSeconds;
         //private string prDBConnectionString;
         private string prOdataServiceUrl;
         private DateTime prLastActivityTime;
@@ -114,14 +114,7 @@ namespace PrintWindowsService
         public int PrintTaskFrequencyInSeconds
         {
             get { return prPrintTaskFrequencyInSeconds; }
-        }
-        /// <summary>
-        /// Ping timeout in seconds
-        /// </summary>
-        public int PingTimeoutInSeconds
-        {
-            get { return prPingTimeoutInSeconds; }
-        }
+        }        
         /// <summary>
         /// DB connection string
         /// </summary>
@@ -167,23 +160,17 @@ namespace PrintWindowsService
         /// <param name="computerName">			   	Name of the computer. </param>
         /// <param name="version">					   	The version. </param>
         /// <param name="startTime">				   	The start time. </param>
-        /// <param name="printTaskFrequencyInSeconds">	The print task frequency in seconds. </param>
-        /// <param name="pingTimeoutInSeconds">	   	The ping timeout in seconds. </param>
         /// <param name="odataServiceUrl">			   	URL of the odata service. </param>
         public PrintServiceProductInfo(string appName,
                                        string computerName,
                                        string version,
                                        DateTime startTime,
-                                       int printTaskFrequencyInSeconds,
-                                       int pingTimeoutInSeconds,
                                        string odataServiceUrl)
         {
             prAppName = appName;
             prComputerName = computerName;
             prVersion = version;
             prStartTime = startTime;
-            prPrintTaskFrequencyInSeconds = printTaskFrequencyInSeconds;
-            prPingTimeoutInSeconds = pingTimeoutInSeconds;
             prOdataServiceUrl = odataServiceUrl;
 
             LastActivityTime = new DateTime(0);
