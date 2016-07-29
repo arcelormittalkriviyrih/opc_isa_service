@@ -27,7 +27,7 @@ namespace JobOrdersService
         /// </summary>
         public static string MakeRequest(string requestUrl)
         {
-			string responseText = string.Empty;
+            string responseText = string.Empty;
             HttpWebRequest request = WebRequest.Create(requestUrl) as HttpWebRequest;
             request.Credentials = CredentialCache.DefaultNetworkCredentials;
 #if (DEBUG)
@@ -59,7 +59,8 @@ namespace JobOrdersService
                                                             aJobOrderID));
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(UpdateStatusUrl);
 
-            string payload = "{" + string.Format(@"""DispatchStatus"":""{0}""", aActionState) + "}";
+            string currentDateTime = DateTime.Now.ToString("yyyy-MM-ddThh:mm:ss.000Z");
+            string payload = "{" + string.Format(@"""DispatchStatus"":""{0}""", "Done") + string.Format(@",""EndTime"":""{0}""", currentDateTime) + "}";
 
             byte[] body = Encoding.UTF8.GetBytes(payload);
             request.Method = "PATCH";
