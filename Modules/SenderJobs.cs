@@ -23,12 +23,12 @@ namespace KEPServerSenderService
         /// <summary>
         /// The name of the system event source used by this service.
         /// </summary>
-        private const string cSystemEventSourceName = "AM.KEPSSenderService.EventSource";
+        private const string cSystemEventSourceName = "AM.OPCCommandsSenderService.EventSource";
 
         /// <summary>
         /// The name of the system event log used by this service.
         /// </summary>
-        private const string cSystemEventLogName = "AM.KEPSSenderService.Log";
+        private const string cSystemEventLogName = "AM.OPCCommandsSenderService.Log";
 
         /// <summary>
         /// The name of the configuration parameter for the send commands frequency in seconds.

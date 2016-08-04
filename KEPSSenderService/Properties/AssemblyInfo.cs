@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("WindowsService1")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Arcelor Mittal OPC Commands Sender Service")]
+[assembly: AssemblyDescription("Sends commands for OPC server")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("WindowsService1")]
+[assembly: AssemblyCompany("Nikama AG")]
+[assembly: AssemblyProduct("OPC Commands Sender")]
 [assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

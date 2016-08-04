@@ -28,24 +28,24 @@
         /// </summary>
         private void InitializeComponent()
         {
-			this.serviceProcessInstaller = new System.ServiceProcess.ServiceProcessInstaller();
-			this.serviceInstaller = new System.ServiceProcess.ServiceInstaller();
-			// 
-			// serviceProcessInstaller
-			// 
-			this.serviceProcessInstaller.Password = null;
-			this.serviceProcessInstaller.Username = null;
-			// 
-			// serviceInstaller
-			// 
-			this.serviceInstaller.Description = "KEP Server sender service for Arcelor Mittal";
-			this.serviceInstaller.DisplayName = "Arcelor Mittal KEP Server sender Service";
-			this.serviceInstaller.ServiceName = "ArcelorMittal.KEPServerSender";
-			this.serviceInstaller.StartType = System.ServiceProcess.ServiceStartMode.Automatic;
-			// 
-			// ProjectInstaller
-			// 
-			this.Installers.AddRange(new System.Configuration.Install.Installer[] {
+            this.serviceProcessInstaller = new System.ServiceProcess.ServiceProcessInstaller();
+            this.serviceInstaller = new System.ServiceProcess.ServiceInstaller();
+            // 
+            // serviceProcessInstaller
+            // 
+            this.serviceProcessInstaller.Password = null;
+            this.serviceProcessInstaller.Username = null;
+            // 
+            // serviceInstaller
+            // 
+            this.serviceInstaller.Description = "OPC Commands sender service for Arcelor Mittal";
+            this.serviceInstaller.DisplayName = "Arcelor Mittal OPC Commands Sender Service";
+            this.serviceInstaller.ServiceName = "ArcelorMittal.OPCCommandsSender";
+            this.serviceInstaller.StartType = System.ServiceProcess.ServiceStartMode.Automatic;
+            // 
+            // ProjectInstaller
+            // 
+            this.Installers.AddRange(new System.Configuration.Install.Installer[] {
             this.serviceProcessInstaller,
             this.serviceInstaller});
 
