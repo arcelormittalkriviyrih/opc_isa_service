@@ -59,7 +59,7 @@ namespace JobOrdersService
                                                             aJobOrderID));
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(UpdateStatusUrl);
 
-            string currentDateTime = DateTime.Now.ToString("yyyy-MM-ddThh:mm:ss.000Z");
+            string currentDateTime = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.000Z");
             string payload = "{" + string.Format(@"""DispatchStatus"":""{0}""", "Done") + string.Format(@",""EndTime"":""{0}""", currentDateTime) + "}";
 
             byte[] body = Encoding.UTF8.GetBytes(payload);

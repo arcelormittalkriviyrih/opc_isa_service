@@ -72,7 +72,7 @@ namespace PrintWindowsService
         private string prComputerName;
         private string prVersion;
         private DateTime prStartTime;
-        private int prPrintTaskFrequencyInSeconds;
+        //private int prPrintTaskFrequencyInSeconds;
         //private int prPingTimeoutInSeconds;
         //private string prDBConnectionString;
         private string prOdataServiceUrl;
@@ -111,10 +111,10 @@ namespace PrintWindowsService
         /// <summary>
         /// Print task frequency in seconds
         /// </summary>
-        public int PrintTaskFrequencyInSeconds
+        /*public int PrintTaskFrequencyInSeconds
         {
             get { return prPrintTaskFrequencyInSeconds; }
-        }        
+        }*/        
         /// <summary>
         /// DB connection string
         /// </summary>
