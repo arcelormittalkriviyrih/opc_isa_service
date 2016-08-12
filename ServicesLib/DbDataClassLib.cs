@@ -94,6 +94,48 @@ namespace JobOrdersService
                 response.Close();
             }
         }
+
+        public static void updatePrinterStatus(string odataServiceUrl, string printerNo, string printerStatus)
+        {
+            var printerState = new { PrinterNo = printerNo, PrinterStatus = printerStatus };
+            string json = JsonConvert.SerializeObject(printerState);
+
+            string payload = json;
+            byte[] body = Encoding.UTF8.GetBytes(payload);
+            string url = Requests.CreateRequest(odataServiceUrl, "upd_PrinterStatus");
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+
+            request.Method = "POST";
+            request.ContentType = "application/json";
+            request.ContentLength = body.Length;
+            request.Credentials = CredentialCache.DefaultNetworkCredentials;
+#if (DEBUG)
+            request.Credentials = new NetworkCredential("atokar", "qcAL0ZEV", "ask-ad");
+#endif
+
+            using (Stream stream = request.GetRequestStream())
+            {
+                stream.Write(body, 0, body.Length);
+                stream.Close();
+            }
+
+            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+            {
+                if (response.StatusCode != HttpStatusCode.OK)
+                    throw new Exception(string.Format(
+                    "Server error (HTTP {0}: {1}).",
+                    response.StatusCode,
+                    response.StatusDescription));
+
+                var encoding = ASCIIEncoding.ASCII;
+                using (var reader = new System.IO.StreamReader(response.GetResponseStream(), encoding))
+                {
+                    string responseText = reader.ReadToEnd();
+                }
+
+                response.Close();
+            }
+        }
     }
     /// <summary>
     /// Job orders list

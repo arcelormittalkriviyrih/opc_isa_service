@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Security.Cryptography.X509Certificates;
-using CommonEventSender;
+//using CommonEventSender;
 using Opc.Ua;
 using Opc.Ua.Client;
 using System.Diagnostics;

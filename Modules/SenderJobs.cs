@@ -198,21 +198,30 @@ namespace KEPServerSenderService
             m_SenderTimer.Stop();
 
             string lLastError = string.Empty;
-            KEPSSenderdbData senderDbData = new KEPSSenderdbData(OdataServiceUrl);
-            List<SenderJobProps> JobData = senderDbData.fillSenderJobData();
+            int CountJobsToProcess = 0;
+
             try
             {
-                string sendState;
-                if (JobData.Count > 0)
+                KEPSSenderdbData senderDbData = new KEPSSenderdbData(OdataServiceUrl);
+                JobOrders jobsToProcess = senderDbData.getJobsToProcess();
+                CountJobsToProcess = jobsToProcess.JobOrdersObj.Count;
+                SenderMonitorEvent.sendMonitorEvent(vpEventLog, "Jobs to process: " + CountJobsToProcess, EventLogEntryType.Information);
+
+                string sendState = string.Empty;
+                if (CountJobsToProcess > 0)
                 {
                     // Step 1 -- Connect to UA server
                     //string discoveryUrl = "opc.tcp://127.0.0.1:49320";
                     using (Session AMSession = ClientUtils.CreateSession(OPCServerUrl, "ArcelorMittal.UA.SenderCommand"))
                     {
-                        foreach (SenderJobProps job in JobData)
+                        foreach (JobOrders.JobOrdersValue jobVal in jobsToProcess.JobOrdersObj)
                         {
                             try
                             {
+                                SenderJobProps job = new SenderJobProps(jobVal.ID,
+                                                                        jobVal.Command,
+                                                                        (string)(jobVal.CommandRule));
+                                
                                 if (WriteToKEPServer(AMSession, job))
                                 {
                                     sendState = "Done";
@@ -250,9 +259,9 @@ namespace KEPServerSenderService
                 SenderMonitorEvent.sendMonitorEvent(vpEventLog, lLastError, EventLogEntryType.Error);
                 wmiProductInfo.LastServiceError = string.Format("{0}. On {1}", lLastError, DateTime.Now);
             }
-            wmiProductInfo.SendCommandsCount += JobData.Count;
+            wmiProductInfo.SendCommandsCount += CountJobsToProcess;
             wmiProductInfo.PublishInfo();
-            SenderMonitorEvent.sendMonitorEvent(vpEventLog, string.Format("Send command is done. {0} tasks", JobData.Count), EventLogEntryType.Information);
+            SenderMonitorEvent.sendMonitorEvent(vpEventLog, string.Format("Send command is done. {0} tasks", CountJobsToProcess), EventLogEntryType.Information);
 
             m_SenderTimer.Start();
         }
@@ -437,21 +446,11 @@ namespace KEPServerSenderService
         }
 
         /// <summary>
-        /// Processing of input queue and generation of list of KEP Server commands
+        /// Get KEP Server commands jobs to process
         /// </summary>
-        public List<SenderJobProps> fillSenderJobData()
+        public JobOrders getJobsToProcess()
         {
-            List<SenderJobProps> lSenderJobProps = new List<SenderJobProps>();
-
-            JobOrders jobOrders = new JobOrders(webServiceUrl, "KEPCommands", "ToSend");
-            foreach (JobOrders.JobOrdersValue joValue in jobOrders.JobOrdersObj)
-            {
-                lSenderJobProps.Add(new SenderJobProps(joValue.ID,
-                                                       joValue.Command,
-                                                       (string)(joValue.CommandRule)));
-            }
-
-            return lSenderJobProps;
+            return new JobOrders(webServiceUrl, "KEPCommands", "ToSend");
         }
     }
 }
