@@ -6,5 +6,4 @@ rem install existing service
 echo off
 C:\Windows\Microsoft.NET\Framework\v4.0.30319\InstallUtil.exe /username=%PRINT_USER% /password=%PRINT_PASS% /unattended "C:\Nikama\opc_isa_service\KEPSSenderService.exe"
 echo on
-rem start service
-rem net start "ArcelorMittal.OPCCommandsSender"
+net stop "ArcelorMittal.OPCCommandsSender"
