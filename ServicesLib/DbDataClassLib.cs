@@ -30,9 +30,6 @@ namespace JobOrdersService
             string responseText = string.Empty;
             HttpWebRequest request = WebRequest.Create(requestUrl) as HttpWebRequest;
             request.Credentials = CredentialCache.DefaultNetworkCredentials;
-#if (DEBUG)
-            request.Credentials = new NetworkCredential("atokar", "qcAL0ZEV", "ask-ad");
-#endif
             using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
             {
                 if (response.StatusCode != HttpStatusCode.OK)
