@@ -73,7 +73,7 @@
 		<MinSubscriptionLifetime>10000</MinSubscriptionLifetime>
 	</ClientConfiguration>
 	<TraceConfiguration>
-		<OutputFilePath>%MyDocuments%\ArcelorMittal.UA.SenderCommand.log.txt</OutputFilePath>
+		<OutputFilePath>C:\Nikama\opc_isa_service\Logs\ArcelorMittal.UA.SenderCommand.log.txt</OutputFilePath>
 		<DeleteOnLoad>true</DeleteOnLoad>
 		<TraceMasks>515</TraceMasks>
 	</TraceConfiguration>
