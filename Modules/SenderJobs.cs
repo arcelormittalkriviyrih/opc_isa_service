@@ -221,7 +221,7 @@ namespace KEPServerSenderService
                                 SenderJobProps job = new SenderJobProps(jobVal.ID,
                                                                         jobVal.Command,
                                                                         (string)(jobVal.CommandRule));
-                                
+
                                 if (WriteToKEPServer(AMSession, job))
                                 {
                                     sendState = "Done";
@@ -246,12 +246,15 @@ namespace KEPServerSenderService
                             {
                                 lLastError = "Error sending command: " + ex.ToString();
                                 SenderMonitorEvent.sendMonitorEvent(vpEventLog, lLastError, EventLogEntryType.Error);
+                                lLastError = "Reconecting...";
+                                SenderMonitorEvent.sendMonitorEvent(vpEventLog, lLastError, EventLogEntryType.Information);
+                                AMSession.Reconnect();
                             }
                         }
                         // Step 3 -- Clean up
                         AMSession.Close();
                     }
-                }                
+                }
             }
             catch (Exception ex)
             {
