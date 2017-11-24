@@ -126,13 +126,21 @@ namespace KEPServerSenderService
             int sendCommandFrequencyInSeconds = int.Parse(System.Configuration.ConfigurationManager.AppSettings[cSendCommandFrequencyName]);
             OdataServiceUrl = System.Configuration.ConfigurationManager.AppSettings[cOdataService];
             OPCServerUrl = System.Configuration.ConfigurationManager.AppSettings[cOPCServerUrl];
+            SenderMonitorEvent.sendMonitorEvent(vpEventLog, string.Format("ODataServiceUrl = {0}", OdataServiceUrl), EventLogEntryType.Information);
+            SenderMonitorEvent.sendMonitorEvent(vpEventLog, string.Format("OPCServerUrl = {0}", OPCServerUrl), EventLogEntryType.Information);
 
-            wmiProductInfo = new KEPSenderServiceProductInfo(cServiceTitle,
-                                                             Environment.MachineName,
-                                                             Assembly.GetExecutingAssembly().GetName().Version.ToString(),
-                                                             DateTime.Now,
-                                                             sendCommandFrequencyInSeconds,
-                                                             OdataServiceUrl);
+            try
+            {
+                wmiProductInfo = new KEPSenderServiceProductInfo(cServiceTitle,
+                                                                 Environment.MachineName,
+                                                                 Assembly.GetExecutingAssembly().GetName().Version.ToString(),
+                                                                 DateTime.Now,
+                                                                 sendCommandFrequencyInSeconds,
+                                                                 OdataServiceUrl);
+            }catch(Exception ex)
+            {
+                SenderMonitorEvent.sendMonitorEvent(vpEventLog, string.Format("Failed to initialize WMI = {0}", ex.ToString()), EventLogEntryType.Error);
+            }
 
             m_SenderTimer = new System.Timers.Timer();
             m_SenderTimer.Interval = sendCommandFrequencyInSeconds * 1000; // seconds to milliseconds
@@ -258,9 +266,31 @@ namespace KEPServerSenderService
             }
             catch (Exception ex)
             {
-                lLastError = "Error getting jobs: " + ex.ToString();
-                SenderMonitorEvent.sendMonitorEvent(vpEventLog, lLastError, EventLogEntryType.Error);
-                wmiProductInfo.LastServiceError = string.Format("{0}. On {1}", lLastError, DateTime.Now);
+                try
+                {
+                    string details = string.Empty;
+                    if (ex is System.Net.WebException)
+                    {
+                        var resp = new System.IO.StreamReader((ex as System.Net.WebException).Response.GetResponseStream()).ReadToEnd();
+
+                        try
+                        {
+                            dynamic obj = Newtonsoft.Json.JsonConvert.DeserializeObject(resp);
+                            details = obj.error.message;
+                        }
+                        catch
+                        {
+                            details = resp;
+                        }
+                    }
+                    lLastError = "Error getting jobs: " + ex.ToString() + " Details: " + details;
+                    SenderMonitorEvent.sendMonitorEvent(vpEventLog, lLastError, EventLogEntryType.Error);
+                    wmiProductInfo.LastServiceError = string.Format("{0}. On {1}", lLastError, DateTime.Now);
+                }
+                catch (Exception exc)
+                {
+                    SenderMonitorEvent.sendMonitorEvent(vpEventLog, exc.Message, EventLogEntryType.Error);
+                }                
             }
             wmiProductInfo.SendCommandsCount += CountJobsToProcess;
             wmiProductInfo.PublishInfo();
