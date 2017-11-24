@@ -139,7 +139,7 @@ namespace KEPServerSenderService
                                                                  OdataServiceUrl);
             }catch(Exception ex)
             {
-                SenderMonitorEvent.sendMonitorEvent(vpEventLog, string.Format("Failed to initialize WMI = {0}", ex.ToString()), EventLogEntryType.Error);
+                //SenderMonitorEvent.sendMonitorEvent(vpEventLog, string.Format("Failed to initialize WMI = {0}", ex.ToString()), EventLogEntryType.Error);
             }
 
             m_SenderTimer = new System.Timers.Timer();

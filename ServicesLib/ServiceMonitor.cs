@@ -61,7 +61,7 @@ namespace CommonEventSender
             }
             catch (Exception ex)
             {
-                new SenderMonitorEvent(eventLog, ex.ToString(), EventLogEntryType.Error);
+                //new SenderMonitorEvent(eventLog, ex.ToString(), EventLogEntryType.Error);
             }
         }
     }
