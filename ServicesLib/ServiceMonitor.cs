@@ -55,7 +55,14 @@ namespace CommonEventSender
         public static void sendMonitorEvent(EventLog eventLog, string message, EventLogEntryType eventType)
         {
             SenderMonitorEvent MonitorEvent = new SenderMonitorEvent(eventLog, message, eventType);
-            Instrumentation.Fire(MonitorEvent);
+            try
+            {
+                Instrumentation.Fire(MonitorEvent);
+            }
+            catch (Exception ex)
+            {
+                new SenderMonitorEvent(eventLog, ex.ToString(), EventLogEntryType.Error);
+            }
         }
     }
 }
