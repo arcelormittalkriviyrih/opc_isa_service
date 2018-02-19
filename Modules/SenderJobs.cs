@@ -233,22 +233,20 @@ namespace KEPServerSenderService
                                 if (WriteToKEPServer(AMSession, job))
                                 {
                                     sendState = "Done";
-                                    wmiProductInfo.LastActivityTime = DateTime.Now;
+                                    if(wmiProductInfo!=null)
+                                        wmiProductInfo.LastActivityTime = DateTime.Now;
+                                    Requests.updateJobStatus(OdataServiceUrl, job.JobOrderID, sendState);
                                 }
                                 else
                                 {
                                     sendState = "Failed";
-                                }
-                                lLastError = String.Format("JobOrderID: {0}. Send to KEP Server element {1} = {2}. Status: {3}", job.JobOrderID, job.Command, job.CommandRule, sendState);
+                                    lLastError = String.Format("JobOrderID: {0}. Send to KEP Server element {1} = {2}. Status: {3}", job.JobOrderID, job.Command, job.CommandRule, sendState);
+                                    if (wmiProductInfo != null)
+                                        wmiProductInfo.LastServiceError = string.Format("{0}. On {1}", lLastError, DateTime.Now);
 
-                                if (sendState == "Done")
-                                {
-                                    Requests.updateJobStatus(OdataServiceUrl, job.JobOrderID, sendState);
+                                    SenderMonitorEvent.sendMonitorEvent(vpEventLog, lLastError, EventLogEntryType.Error);
                                 }
-                                else if (sendState == "Failed")
-                                {
-                                    wmiProductInfo.LastServiceError = string.Format("{0}. On {1}", lLastError, DateTime.Now);
-                                }
+                           
                             }
                             catch (Exception ex)
                             {
