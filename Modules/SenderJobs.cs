@@ -219,34 +219,39 @@ namespace KEPServerSenderService
                 if (CountJobsToProcess > 0)
                 {
                     // Step 1 -- Connect to UA server
+                    SenderMonitorEvent.sendMonitorEvent(vpEventLog, "Step 1 -- Connect to OPC server", EventLogEntryType.Information);
                     //string discoveryUrl = "opc.tcp://127.0.0.1:49320";
                     using (Session AMSession = ClientUtils.CreateSession(OPCServerUrl, "ArcelorMittal.UA.SenderCommand"))
                     {
+                        SenderMonitorEvent.sendMonitorEvent(vpEventLog, "Loop through jobs", EventLogEntryType.Information);
                         foreach (JobOrders.JobOrdersValue jobVal in jobsToProcess.JobOrdersObj)
                         {
                             try
                             {
+                                SenderMonitorEvent.sendMonitorEvent(vpEventLog, "new SenderJobProps", EventLogEntryType.Information);
                                 SenderJobProps job = new SenderJobProps(jobVal.ID,
                                                                         jobVal.Command,
                                                                         (string)(jobVal.CommandRule));
-
+                                SenderMonitorEvent.sendMonitorEvent(vpEventLog, "WriteToKEPServer", EventLogEntryType.Information);
                                 if (WriteToKEPServer(AMSession, job))
                                 {
                                     sendState = "Done";
-                                    if(wmiProductInfo!=null)
-                                        wmiProductInfo.LastActivityTime = DateTime.Now;
-                                    Requests.updateJobStatus(OdataServiceUrl, job.JobOrderID, sendState);
+                                    wmiProductInfo.LastActivityTime = DateTime.Now;
                                 }
                                 else
                                 {
                                     sendState = "Failed";
-                                    lLastError = String.Format("JobOrderID: {0}. Send to KEP Server element {1} = {2}. Status: {3}", job.JobOrderID, job.Command, job.CommandRule, sendState);
-                                    if (wmiProductInfo != null)
-                                        wmiProductInfo.LastServiceError = string.Format("{0}. On {1}", lLastError, DateTime.Now);
-
-                                    SenderMonitorEvent.sendMonitorEvent(vpEventLog, lLastError, EventLogEntryType.Error);
                                 }
-                           
+                                lLastError = String.Format("JobOrderID: {0}. Send to KEP Server element {1} = {2}. Status: {3}", job.JobOrderID, job.Command, job.CommandRule, sendState);
+
+                                if (sendState == "Done")
+                                {
+                                    Requests.updateJobStatus(OdataServiceUrl, job.JobOrderID, sendState);
+                                }
+                                else if (sendState == "Failed")
+                                {
+                                    wmiProductInfo.LastServiceError = string.Format("{0}. On {1}", lLastError, DateTime.Now);
+                                }
                             }
                             catch (Exception ex)
                             {
@@ -387,14 +392,15 @@ namespace KEPServerSenderService
 
         private bool WriteToKEPServer(Session AMSession, SenderJobProps job)
         {
+            SenderMonitorEvent.sendMonitorEvent(vpEventLog, String.Format("Step 2 -- Read the value of a node representing a PI Point data under the hood: {0}. ", job.Command), EventLogEntryType.Information);
             // Step 2 -- Read the value of a node representing a PI Point data under the hood
             NodeId nodeToRead = new NodeId(job.Command/*Element*/, 2);
-            Node node = AMSession.NodeCache.Find(nodeToRead) as Node;
-
+            Node node = AMSession.NodeCache.Find(nodeToRead) as Node;            
 
             if (node != null)
             {
                 DataValue value = AMSession.ReadValue(nodeToRead);
+                SenderMonitorEvent.sendMonitorEvent(vpEventLog, String.Format("AMSession.ReadValue: {0}. ", value), EventLogEntryType.Information);
                 WriteValue Wvalue = new WriteValue();
                 Wvalue.NodeId = nodeToRead;
                 Wvalue.AttributeId = Attributes.Value;
@@ -407,7 +413,7 @@ namespace KEPServerSenderService
                 Wvalue.IndexRange = null;
                 Wvalue.Value = value;
                 Wvalue.Value.Value = ConvertToObject(job.CommandRule);
-
+                SenderMonitorEvent.sendMonitorEvent(vpEventLog, String.Format("Wvalue.Value.Value: {0}. ", Wvalue.Value.Value), EventLogEntryType.Information);
                 if (Wvalue.Value.Value != null)
                 {
                     WriteValueCollection nodesToWrite = new WriteValueCollection();
@@ -415,13 +421,13 @@ namespace KEPServerSenderService
 
                     StatusCodeCollection results = null;
                     DiagnosticInfoCollection diagnosticInfos = null;
-
+                    SenderMonitorEvent.sendMonitorEvent(vpEventLog, String.Format("Write: {0}. ", nodesToWrite), EventLogEntryType.Information);
                     ResponseHeader responseHeader = AMSession.Write(
                             null,
                             nodesToWrite,
                             out results,
                             out diagnosticInfos);
-
+                    SenderMonitorEvent.sendMonitorEvent(vpEventLog, String.Format("ResponseHeader: {0}. ", responseHeader), EventLogEntryType.Information);
                     Session.ValidateResponse(results, nodesToWrite);
                     //Session.ValidateDiagnosticInfos(diagnosticInfos, nodesToWrite);
 
