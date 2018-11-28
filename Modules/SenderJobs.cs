@@ -236,7 +236,9 @@ namespace KEPServerSenderService
                                 if (WriteToKEPServer(AMSession, job))
                                 {
                                     sendState = "Done";
-                                    wmiProductInfo.LastActivityTime = DateTime.Now;
+									if(wmiProductInfo!=null){
+										wmiProductInfo.LastActivityTime = DateTime.Now;
+									}
                                 }
                                 else
                                 {
@@ -250,7 +252,9 @@ namespace KEPServerSenderService
                                 }
                                 else if (sendState == "Failed")
                                 {
+									if(wmiProductInfo!=null){
                                     wmiProductInfo.LastServiceError = string.Format("{0}. On {1}", lLastError, DateTime.Now);
+									}
                                 }
                             }
                             catch (Exception ex)
@@ -288,15 +292,19 @@ namespace KEPServerSenderService
                     }
                     lLastError = "Error getting jobs: " + ex.ToString() + " Details: " + details;
                     SenderMonitorEvent.sendMonitorEvent(vpEventLog, lLastError, EventLogEntryType.Error);
+					if(wmiProductInfo!=null){
                     wmiProductInfo.LastServiceError = string.Format("{0}. On {1}", lLastError, DateTime.Now);
+					}
                 }
                 catch (Exception exc)
                 {
                     SenderMonitorEvent.sendMonitorEvent(vpEventLog, exc.Message, EventLogEntryType.Error);
                 }                
             }
+			if(wmiProductInfo!=null){
             wmiProductInfo.SendCommandsCount += CountJobsToProcess;
             wmiProductInfo.PublishInfo();
+			}
             SenderMonitorEvent.sendMonitorEvent(vpEventLog, string.Format("Send command is done. {0} tasks", CountJobsToProcess), EventLogEntryType.Information);
 
             m_SenderTimer.Start();
