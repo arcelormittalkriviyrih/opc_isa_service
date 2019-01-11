@@ -13,3 +13,4 @@ sc.exe config "ArcelorMittal.OPCCommandsSender" obj=%PRINT_USER% password=%PRINT
 rem configure delayed service
 sc.exe config "ArcelorMittal.OPCCommandsSender" start=delayed-auto
 rem net stop "ArcelorMittal.OPCCommandsSender"
+sc.exe start "ArcelorMittal.OPCCommandsSender"
