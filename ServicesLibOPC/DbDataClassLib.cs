@@ -37,12 +37,11 @@ namespace JobOrdersService
                     "Server error (HTTP {0}: {1}).",
                     response.StatusCode,
                     response.StatusDescription));
-                var encoding = ASCIIEncoding.ASCII;
-                using (var reader = new System.IO.StreamReader(response.GetResponseStream(), encoding))
+                using (var reader = new StreamReader(response.GetResponseStream(), Encoding.ASCII))
                 {
                     responseText = reader.ReadToEnd();
                 }
-                response.Close();
+                //response.Close();
             }
             return responseText;
         }
@@ -50,7 +49,7 @@ namespace JobOrdersService
         /// <summary>
         /// Update status of the job
         /// </summary>
-        public static void updateJobStatus(string webServiceUrl, int aJobOrderID, string aActionState)
+        public static void UpdateJobStatus(string webServiceUrl, int aJobOrderID, string aActionState)
         {
             string UpdateStatusUrl = Requests.CreateRequest(webServiceUrl, string.Format("JobOrder({0})",
                                                             aJobOrderID));
@@ -71,7 +70,7 @@ namespace JobOrdersService
             using (Stream stream = request.GetRequestStream())
             {
                 stream.Write(body, 0, body.Length);
-                stream.Close();
+                //stream.Close();
             }
 
             using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
@@ -82,17 +81,16 @@ namespace JobOrdersService
                     response.StatusCode,
                     response.StatusDescription));
 
-                var encoding = ASCIIEncoding.ASCII;
-                using (var reader = new System.IO.StreamReader(response.GetResponseStream(), encoding))
+                using (var reader = new StreamReader(response.GetResponseStream(), Encoding.ASCII))
                 {
                     string responseText = reader.ReadToEnd();
                 }
 
-                response.Close();
+                //response.Close();
             }
         }
 
-        public static void updatePrinterStatus(string odataServiceUrl, string printerNo, string printerStatus)
+        public static void UpdatePrinterStatus(string odataServiceUrl, string printerNo, string printerStatus)
         {
             var printerState = new { PrinterNo = printerNo, PrinterStatus = printerStatus };
             string json = JsonConvert.SerializeObject(printerState);
@@ -113,7 +111,7 @@ namespace JobOrdersService
             using (Stream stream = request.GetRequestStream())
             {
                 stream.Write(body, 0, body.Length);
-                stream.Close();
+                //stream.Close();
             }
 
             using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
@@ -124,13 +122,12 @@ namespace JobOrdersService
                     response.StatusCode,
                     response.StatusDescription));
 
-                var encoding = ASCIIEncoding.ASCII;
-                using (var reader = new System.IO.StreamReader(response.GetResponseStream(), encoding))
+                using (var reader = new StreamReader(response.GetResponseStream(), Encoding.ASCII))
                 {
                     string responseText = reader.ReadToEnd();
                 }
 
-                response.Close();
+                //response.Close();
             }
         }
     }
@@ -140,9 +137,9 @@ namespace JobOrdersService
     public class JobOrders
     {
         /// <summary>	URL of the web service. </summary>
-        private string webServiceUrl;
+        private readonly string webServiceUrl;
         /// <summary>	The job orders object. </summary>
-        private List<JobOrdersValue> jobOrdersObj = null;
+        private readonly List<JobOrdersValue> jobOrdersObj = null;
 
         /// <summary>	Gets the job orders object. </summary>
         ///
@@ -197,7 +194,7 @@ namespace JobOrdersService
             /// <summary>	Gets or sets the value. </summary>
             ///
             /// <value>	The value. </value>
-            public List<JobOrdersValue> value { get; set; }
+            public List<JobOrdersValue> Value { get; set; }
         }
 
         /// <summary>	Deserialize job orders. </summary>
@@ -208,7 +205,7 @@ namespace JobOrdersService
         private List<JobOrdersValue> DeserializeJobOrders(string json)
         {
             JobOrdersRoot prRoot = JsonConvert.DeserializeObject<JobOrdersRoot>(json);
-            return prRoot.value;
+            return prRoot.Value;
         }
     }
 }

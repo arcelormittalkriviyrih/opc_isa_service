@@ -103,14 +103,16 @@ namespace KEPServerSenderService
 
             if (id == null)
             {
-                id = new CertificateIdentifier();
-                id.StoreType = CertificateStoreType.Windows;
-                id.StorePath = "LocalMachine\\My";
-                id.SubjectName = configuration.ApplicationName;
+                id = new CertificateIdentifier
+                {
+                    StoreType = CertificateStoreType.X509Store,
+                    StorePath = "LocalMachine\\My",
+                    SubjectName = configuration.ApplicationName
+                };
             }
 
             // check for certificate with a private key.
-            X509Certificate2 certificate = id.Find(true);
+            X509Certificate2 certificate = id.Find(true).Result;
 
             if (certificate != null)
             {
@@ -122,8 +124,10 @@ namespace KEPServerSenderService
             //This UA application does not have an instance certificate. Create one automatically
 
             // construct the subject name from the 
-            List<string> hostNames = new List<string>();
-            hostNames.Add(System.Net.Dns.GetHostName());
+            List<string> hostNames = new List<string>
+            {
+                System.Net.Dns.GetHostName()
+            };
 
             string commonName = Utils.Format("CN={0}", configuration.ApplicationName);
             string domainName = Utils.Format("DC={0}", hostNames[0]);
@@ -182,15 +186,34 @@ namespace KEPServerSenderService
             }
 
             // create a new certificate with a new public key pair.
+            //certificate = CertificateFactory.CreateCertificate(
+            //    id.StoreType,
+            //    id.StorePath,
+            //    configuration.ApplicationUri,
+            //    configuration.ApplicationName,
+            //    subjectName,
+            //    hostNames,
+            //    1024,
+            //    120);
+
+            ushort minimumKeySize = CertificateFactory.defaultKeySize;
+            ushort lifeTimeInMonths = CertificateFactory.defaultLifeTime;
+
             certificate = CertificateFactory.CreateCertificate(
                 id.StoreType,
                 id.StorePath,
+                null,
                 configuration.ApplicationUri,
                 configuration.ApplicationName,
-                subjectName,
+                id.SubjectName,
                 hostNames,
-                1024,
-                120);
+                minimumKeySize,
+                DateTime.UtcNow - TimeSpan.FromDays(1),
+                lifeTimeInMonths,
+                CertificateFactory.defaultHashSize,
+                false,
+                null,
+                null);
 
             // update and save the configuration file.
             id.Certificate = certificate;
@@ -201,7 +224,7 @@ namespace KEPServerSenderService
 
             try
             {
-                X509Certificate2 certificate2 = store.FindByThumbprint(certificate.Thumbprint);
+                X509Certificate2 certificate2 = store.FindByThumbprint(certificate.Thumbprint).Result[0];
 
                 if (certificate2 == null)
                 {
@@ -227,7 +250,7 @@ namespace KEPServerSenderService
                 using (FileStream fs = new FileStream(CertificateFileName, FileMode.Create))
                 {
                     fs.Write(certFile, 0, certFile.Length);
-                    fs.Close();
+                    //fs.Close();
                 }
             }
         }
@@ -257,7 +280,10 @@ namespace KEPServerSenderService
         public static Session CreateSession(string discoveryUrl, string configSection)
         {
             // Step 1 -- Load configuration
-            ApplicationConfiguration configuration = ApplicationConfiguration.Load(configSection, ApplicationType.Client);
+            var configFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, configSection + ".Config.xml");
+            var configFileInfo = new FileInfo(configFilePath);
+            ApplicationConfiguration configuration = ApplicationConfiguration.Load(configFileInfo, ApplicationType.Client, null).Result;
+            //ApplicationConfiguration configuration = ApplicationConfiguration.Load(configSection, ApplicationType.Client).Result;
             ClientUtils.CheckApplicationInstanceCertificate(configuration);
 
             // Step 2 -- Select an endpoint
@@ -277,37 +303,43 @@ namespace KEPServerSenderService
             // choose the encoding strategy: true: BinaryEncoding; false: XmlEncoding
             endpoint.Configuration.UseBinaryEncoding = true;
 
-            // create the binding factory.
-            BindingFactory bindingFactory = BindingFactory.Create(configuration, configuration.CreateMessageContext());
+            //// create the binding factory.
+            //BindingFactory bindingFactory = BindingFactory.Create(configuration, configuration.CreateMessageContext());
 
-            // update endpoint description using the discovery endpoint.
-            if (endpoint.UpdateBeforeConnect)
-            {
-                endpoint.UpdateFromServer(bindingFactory);
+            //// update endpoint description using the discovery endpoint.
+            //if (endpoint.UpdateBeforeConnect)
+            //{
+            //    endpoint.UpdateFromServer(bindingFactory);
 
-                //Console.Error.WriteLine("Updated endpoint description for url: {0}\n", endpointDescription.EndpointUrl);
+            //    //Console.Error.WriteLine("Updated endpoint description for url: {0}\n", endpointDescription.EndpointUrl);
 
-                endpointDescription = endpoint.Description;
-                endpointConfiguration = endpoint.Configuration;
-            }
+            //    endpointDescription = endpoint.Description;
+            //    endpointConfiguration = endpoint.Configuration;
+            //}
 
-            X509Certificate2 clientCertificate = configuration.SecurityConfiguration.ApplicationCertificate.Find();
+            X509Certificate2 clientCertificate = configuration.SecurityConfiguration.ApplicationCertificate.Find().Result;
+            configuration.SecurityConfiguration.RejectSHA1SignedCertificates = false;
+            ushort minimumKeySize = CertificateFactory.defaultKeySize / 2;
+            configuration.SecurityConfiguration.MinimumCertificateKeySize = minimumKeySize;
+            configuration.CertificateValidator.Update(configuration.SecurityConfiguration);
 
             // set up a callback to handle certificate validation errors.
             configuration.CertificateValidator.CertificateValidation += new CertificateValidationEventHandler(CertificateValidator_CertificateValidation);
 
             // Step 3 -- Initialize the channel which will be created with the server.
-            SessionChannel channel = SessionChannel.Create(
+            var channel = SessionChannel.Create(
                 configuration,
                 endpointDescription,
                 endpointConfiguration,
-                bindingFactory,
+                //bindingFactory,
                 clientCertificate,
-                null);
+                new ServiceMessageContext());
 
             // Step 4 -- Create a session
-            Session session = new Session(channel, configuration, endpoint);
-            session.ReturnDiagnostics = DiagnosticsMasks.All;
+            Session session = new Session(channel, configuration, endpoint, clientCertificate)
+            {
+                ReturnDiagnostics = DiagnosticsMasks.All
+            };
             string sessionName = "SenderSession";
             UserIdentity identity = new UserIdentity(); // anonymous
             session.KeepAlive += new KeepAliveEventHandler(Session_KeepAlive);
@@ -318,7 +350,7 @@ namespace KEPServerSenderService
         /// <summary>
         /// Raised when a keep alive response is returned from the server.
         /// </summary>
-        static void Session_KeepAlive(Session session, KeepAliveEventArgs e)
+        public static void Session_KeepAlive(Session session, KeepAliveEventArgs e)
         {
             Utils.Trace("===>>> Session KeepAlive: {0} ServerTime: {1:HH:MM:ss}", e.CurrentState, e.CurrentTime.ToLocalTime());
         }

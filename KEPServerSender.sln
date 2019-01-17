@@ -1,49 +1,64 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26403.7
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KEPSSenderService", "KEPSSenderService\KEPSSenderService.csproj", "{10B5711D-4629-443B-850D-F5EC1A575680}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestProject", "UnitTestProject\UnitTestProject.csproj", "{D2AAC3B8-9B3E-4B5B-9FE4-11211A0DF49C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AMServicesLibrary", "ServicesLib\AMServicesLibrary.csproj", "{0BC81C48-D64E-40C8-9BEE-4BAECF6FE0C1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AMServicesLibrary", "ServicesLibOPC\AMServicesLibrary.csproj", "{0BC81C48-D64E-40C8-9BEE-4BAECF6FE0C1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Production|Any CPU = Production|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{10B5711D-4629-443B-850D-F5EC1A575680}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{10B5711D-4629-443B-850D-F5EC1A575680}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10B5711D-4629-443B-850D-F5EC1A575680}.Production|Any CPU.ActiveCfg = Production|Any CPU
+		{10B5711D-4629-443B-850D-F5EC1A575680}.Production|Any CPU.Build.0 = Production|Any CPU
 		{10B5711D-4629-443B-850D-F5EC1A575680}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{10B5711D-4629-443B-850D-F5EC1A575680}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D2AAC3B8-9B3E-4B5B-9FE4-11211A0DF49C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D2AAC3B8-9B3E-4B5B-9FE4-11211A0DF49C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2AAC3B8-9B3E-4B5B-9FE4-11211A0DF49C}.Production|Any CPU.ActiveCfg = Release|Any CPU
+		{D2AAC3B8-9B3E-4B5B-9FE4-11211A0DF49C}.Production|Any CPU.Build.0 = Release|Any CPU
 		{D2AAC3B8-9B3E-4B5B-9FE4-11211A0DF49C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D2AAC3B8-9B3E-4B5B-9FE4-11211A0DF49C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0BC81C48-D64E-40C8-9BEE-4BAECF6FE0C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0BC81C48-D64E-40C8-9BEE-4BAECF6FE0C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0BC81C48-D64E-40C8-9BEE-4BAECF6FE0C1}.Production|Any CPU.ActiveCfg = Production|Any CPU
+		{0BC81C48-D64E-40C8-9BEE-4BAECF6FE0C1}.Production|Any CPU.Build.0 = Production|Any CPU
 		{0BC81C48-D64E-40C8-9BEE-4BAECF6FE0C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0BC81C48-D64E-40C8-9BEE-4BAECF6FE0C1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AB20A45F-F642-4541-8440-59C48FC3DAA9}
+	EndGlobalSection
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 2
+		SccNumberOfProjects = 3
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = http://109.95.53.22:33362/tfs/bulkteq
+		SccTeamFoundationServer = http://tfs.vimas:8080/tfs/bulkteq
 		SccProjectUniqueName0 = KEPSSenderService\\KEPSSenderService.csproj
 		SccProjectName0 = KEPSSenderService
-		SccAuxPath0 = http://109.95.53.22:33362/tfs/bulkteq
+		SccAuxPath0 = http://tfs.vimas:8080/tfs/bulkteq
 		SccLocalPath0 = KEPSSenderService
 		SccProvider0 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccProjectUniqueName1 = UnitTestProject\\UnitTestProject.csproj
 		SccProjectName1 = UnitTestProject
-		SccAuxPath1 = http://109.95.53.22:33362/tfs/bulkteq
+		SccAuxPath1 = http://tfs.vimas:8080/tfs/bulkteq
 		SccLocalPath1 = UnitTestProject
 		SccProvider1 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccProjectUniqueName2 = ServicesLibOPC\\AMServicesLibrary.csproj
+		SccProjectName2 = ServicesLibOPC
+		SccAuxPath2 = http://tfs.vimas:8080/tfs/bulkteq
+		SccLocalPath2 = ServicesLibOPC
+		SccProvider2 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 	EndGlobalSection
 EndGlobal

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Security.Principal;
 using System.Reflection;
@@ -15,7 +14,7 @@ namespace KEPServerSenderService
     /// <summary>
     /// Class for the management of processing of input queue on sending of commands
     /// </summary>
-    public class SenderJobs
+    public class SenderJobs : IDisposable
     {
         #region Const
 
@@ -56,8 +55,8 @@ namespace KEPServerSenderService
 
         private KEPSenderServiceProductInfo wmiProductInfo;
         private bool fJobStarted = false;
-        private string OdataServiceUrl;
-        private string OPCServerUrl = "opc.tcp://127.0.0.1:49320";
+        private readonly string OdataServiceUrl;
+        private readonly string OPCServerUrl = "opc.tcp://127.0.0.1:49320";
         #endregion
 
         #region vpEventLog
@@ -70,7 +69,7 @@ namespace KEPServerSenderService
         /// <summary>
         /// Gets the event log which is used by the service.
         /// </summary>
-        public EventLog vpEventLog
+        public EventLog EventLog
         {
             get
             {
@@ -80,9 +79,10 @@ namespace KEPServerSenderService
                     {
                         string lSystemEventLogName = cSystemEventLogName;
                         m_EventLog = new EventLog();
-                        if (!System.Diagnostics.EventLog.SourceExists(cSystemEventSourceName))
+
+                        if (!EventLog.SourceExists(cSystemEventSourceName))
                         {
-                            System.Diagnostics.EventLog.CreateEventSource(cSystemEventSourceName, lSystemEventLogName);
+                            EventLog.CreateEventSource(cSystemEventSourceName, lSystemEventLogName);
                         }
                         else
                         {
@@ -126,8 +126,8 @@ namespace KEPServerSenderService
             int sendCommandFrequencyInSeconds = int.Parse(System.Configuration.ConfigurationManager.AppSettings[cSendCommandFrequencyName]);
             OdataServiceUrl = System.Configuration.ConfigurationManager.AppSettings[cOdataService];
             OPCServerUrl = System.Configuration.ConfigurationManager.AppSettings[cOPCServerUrl];
-            SenderMonitorEvent.sendMonitorEvent(vpEventLog, string.Format("ODataServiceUrl = {0}", OdataServiceUrl), EventLogEntryType.Information);
-            SenderMonitorEvent.sendMonitorEvent(vpEventLog, string.Format("OPCServerUrl = {0}", OPCServerUrl), EventLogEntryType.Information);
+            SenderMonitorEvent.SendMonitorEvent(EventLog, string.Format("ODataServiceUrl = {0}", OdataServiceUrl), EventLogEntryType.Information, 1);
+            SenderMonitorEvent.SendMonitorEvent(EventLog, string.Format("OPCServerUrl = {0}", OPCServerUrl), EventLogEntryType.Information, 1);
 
             try
             {
@@ -137,16 +137,19 @@ namespace KEPServerSenderService
                                                                  DateTime.Now,
                                                                  sendCommandFrequencyInSeconds,
                                                                  OdataServiceUrl);
-            }catch(Exception ex)
+            }
+            catch// (Exception ex)
             {
                 //SenderMonitorEvent.sendMonitorEvent(vpEventLog, string.Format("Failed to initialize WMI = {0}", ex.ToString()), EventLogEntryType.Error);
             }
 
-            m_SenderTimer = new System.Timers.Timer();
-            m_SenderTimer.Interval = sendCommandFrequencyInSeconds * 1000; // seconds to milliseconds
+            m_SenderTimer = new System.Timers.Timer
+            {
+                Interval = sendCommandFrequencyInSeconds * 1000 // seconds to milliseconds
+            };
             m_SenderTimer.Elapsed += new System.Timers.ElapsedEventHandler(this.OnSenderTimer);
 
-            SenderMonitorEvent.sendMonitorEvent(vpEventLog, string.Format("Send Command Frequncy = {0}", sendCommandFrequencyInSeconds), EventLogEntryType.Information);
+            SenderMonitorEvent.SendMonitorEvent(EventLog, string.Format("Send Command Frequncy = {0}", sendCommandFrequencyInSeconds), EventLogEntryType.Information, 1);
         }
 
         #endregion
@@ -156,12 +159,36 @@ namespace KEPServerSenderService
         /// <summary>
         /// Constructor that prevents a default instance of this class from being created.
         /// </summary>
-        ~SenderJobs()
+        //~SenderJobs()
+        //{
+        //    if (m_EventLog != null)
+        //        m_EventLog.Dispose();
+
+        //    if (m_SenderTimer != null)
+        //        m_SenderTimer.Dispose();
+
+        //    Dispose(false);
+        //}
+
+        #endregion
+
+        #region Destructor
+
+        public void Dispose()
         {
-            if (m_EventLog != null)
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
             {
-                m_EventLog.Close();
+                if(m_EventLog != null)
                 m_EventLog.Dispose();
+
+                if(m_SenderTimer != null)
+                    m_SenderTimer.Dispose();
             }
         }
 
@@ -174,11 +201,11 @@ namespace KEPServerSenderService
         /// </summary>
         public void StartJob()
         {
-            SenderMonitorEvent.sendMonitorEvent(vpEventLog, "Starting send command service...", EventLogEntryType.Information);
+            SenderMonitorEvent.SendMonitorEvent(EventLog, "Starting send command service...", EventLogEntryType.Information, 1);
 
             m_SenderTimer.Start();
 
-            SenderMonitorEvent.sendMonitorEvent(vpEventLog, "Send command service has been started", EventLogEntryType.Information);
+            SenderMonitorEvent.SendMonitorEvent(EventLog, "Send command service has been started", EventLogEntryType.Information, 1);
             fJobStarted = true;
         }
 
@@ -187,13 +214,13 @@ namespace KEPServerSenderService
         /// </summary>
         public void StopJob()
         {
-            SenderMonitorEvent.sendMonitorEvent(vpEventLog, "Stopping send command service...", EventLogEntryType.Information);
+            SenderMonitorEvent.SendMonitorEvent(EventLog, "Stopping send command service...", EventLogEntryType.Information, 2);
 
             //stop timers if working
             if (m_SenderTimer.Enabled)
                 m_SenderTimer.Stop();
 
-            SenderMonitorEvent.sendMonitorEvent(vpEventLog, "Send command service has been stopped", EventLogEntryType.Information);
+            SenderMonitorEvent.SendMonitorEvent(EventLog, "Send command service has been stopped", EventLogEntryType.Information, 2);
             fJobStarted = false;
         }
 
@@ -202,7 +229,7 @@ namespace KEPServerSenderService
         /// </summary>
         public void OnSenderTimer(object sender, System.Timers.ElapsedEventArgs args)
         {
-            SenderMonitorEvent.sendMonitorEvent(vpEventLog, "Monitoring the send command activity", EventLogEntryType.Information);
+            SenderMonitorEvent.SendMonitorEvent(EventLog, "Monitoring the send command activity", EventLogEntryType.Information, 3);
             m_SenderTimer.Stop();
 
             string lLastError = string.Empty;
@@ -211,28 +238,28 @@ namespace KEPServerSenderService
             try
             {
                 KEPSSenderdbData senderDbData = new KEPSSenderdbData(OdataServiceUrl);
-                JobOrders jobsToProcess = senderDbData.getJobsToProcess();
+                JobOrders jobsToProcess = senderDbData.GetJobsToProcess();
                 CountJobsToProcess = jobsToProcess.JobOrdersObj.Count;
-                SenderMonitorEvent.sendMonitorEvent(vpEventLog, "Jobs to process: " + CountJobsToProcess, EventLogEntryType.Information);
+                SenderMonitorEvent.SendMonitorEvent(EventLog, "Jobs to process: " + CountJobsToProcess, EventLogEntryType.Information, 3);
 
                 string sendState = string.Empty;
                 if (CountJobsToProcess > 0)
                 {
                     // Step 1 -- Connect to UA server
-                    SenderMonitorEvent.sendMonitorEvent(vpEventLog, "Step 1 -- Connect to OPC server", EventLogEntryType.Information);
+                    SenderMonitorEvent.SendMonitorEvent(EventLog, "Step 1 -- Connect to OPC server", EventLogEntryType.Information, 4);
                     //string discoveryUrl = "opc.tcp://127.0.0.1:49320";
                     using (Session AMSession = ClientUtils.CreateSession(OPCServerUrl, "ArcelorMittal.UA.SenderCommand"))
                     {
-                        SenderMonitorEvent.sendMonitorEvent(vpEventLog, "Loop through jobs", EventLogEntryType.Information);
+                        SenderMonitorEvent.SendMonitorEvent(EventLog, "Loop through jobs", EventLogEntryType.Information, 4);
                         foreach (JobOrders.JobOrdersValue jobVal in jobsToProcess.JobOrdersObj)
                         {
                             try
                             {
-                                SenderMonitorEvent.sendMonitorEvent(vpEventLog, "new SenderJobProps", EventLogEntryType.Information);
+                                SenderMonitorEvent.SendMonitorEvent(EventLog, "new SenderJobProps", EventLogEntryType.Information, 4);
                                 SenderJobProps job = new SenderJobProps(jobVal.ID,
                                                                         jobVal.Command,
                                                                         (string)(jobVal.CommandRule));
-                                SenderMonitorEvent.sendMonitorEvent(vpEventLog, "WriteToKEPServer", EventLogEntryType.Information);
+                                SenderMonitorEvent.SendMonitorEvent(EventLog, "WriteToKEPServer", EventLogEntryType.Information, 4);
                                 if (WriteToKEPServer(AMSession, job))
                                 {
                                     sendState = "Done";
@@ -244,30 +271,32 @@ namespace KEPServerSenderService
                                 {
                                     sendState = "Failed";
                                 }
-                                lLastError = String.Format("JobOrderID: {0}. Send to KEP Server element {1} = {2}. Status: {3}", job.JobOrderID, job.Command, job.CommandRule, sendState);
+                                lLastError = string.Format("JobOrderID: {0}. Send to KEP Server element {1} = {2}. Status: {3}", job.JobOrderID, job.Command, job.CommandRule, sendState);
 
                                 if (sendState == "Done")
                                 {
-                                    Requests.updateJobStatus(OdataServiceUrl, job.JobOrderID, sendState);
+                                    Requests.UpdateJobStatus(OdataServiceUrl, job.JobOrderID, sendState);
                                 }
                                 else if (sendState == "Failed")
                                 {
 									if(wmiProductInfo!=null){
-                                    wmiProductInfo.LastServiceError = string.Format("{0}. On {1}", lLastError, DateTime.Now);
+                                        wmiProductInfo.LastServiceError = string.Format("{0}. On {1}", lLastError, DateTime.Now);
 									}
                                 }
+                                SenderMonitorEvent.SendMonitorEvent(EventLog, lLastError, EventLogEntryType.Information, 5);
                             }
                             catch (Exception ex)
                             {
                                 lLastError = "Error sending command: " + ex.ToString();
-                                SenderMonitorEvent.sendMonitorEvent(vpEventLog, lLastError, EventLogEntryType.Error);
+                                SenderMonitorEvent.SendMonitorEvent(EventLog, lLastError, EventLogEntryType.Error, 4);
                                 lLastError = "Reconecting...";
-                                SenderMonitorEvent.sendMonitorEvent(vpEventLog, lLastError, EventLogEntryType.Information);
+                                SenderMonitorEvent.SendMonitorEvent(EventLog, lLastError, EventLogEntryType.Information, 4);
                                 AMSession.Reconnect();
                             }
                         }
                         // Step 3 -- Clean up
-                        AMSession.Close();
+                        //AMSession.Close();
+                        AMSession.KeepAlive -= ClientUtils.Session_KeepAlive;
                     }
                 }
             }
@@ -291,21 +320,21 @@ namespace KEPServerSenderService
                         }
                     }
                     lLastError = "Error getting jobs: " + ex.ToString() + " Details: " + details;
-                    SenderMonitorEvent.sendMonitorEvent(vpEventLog, lLastError, EventLogEntryType.Error);
+                    SenderMonitorEvent.SendMonitorEvent(EventLog, lLastError, EventLogEntryType.Error, 4);
 					if(wmiProductInfo!=null){
                     wmiProductInfo.LastServiceError = string.Format("{0}. On {1}", lLastError, DateTime.Now);
 					}
                 }
                 catch (Exception exc)
                 {
-                    SenderMonitorEvent.sendMonitorEvent(vpEventLog, exc.Message, EventLogEntryType.Error);
+                    SenderMonitorEvent.SendMonitorEvent(EventLog, exc.Message, EventLogEntryType.Error, 4);
                 }                
             }
 			if(wmiProductInfo!=null){
             wmiProductInfo.SendCommandsCount += CountJobsToProcess;
             wmiProductInfo.PublishInfo();
 			}
-            SenderMonitorEvent.sendMonitorEvent(vpEventLog, string.Format("Send command is done. {0} tasks", CountJobsToProcess), EventLogEntryType.Information);
+            SenderMonitorEvent.SendMonitorEvent(EventLog, string.Format("Send command is done. {0} tasks", CountJobsToProcess), EventLogEntryType.Information, 3);
 
             m_SenderTimer.Start();
         }
@@ -317,8 +346,10 @@ namespace KEPServerSenderService
 
             if (rightBracketPos > 0)
             {
-                NumberFormatInfo nfi = new NumberFormatInfo();
-                nfi.NumberDecimalSeparator = ".";
+                NumberFormatInfo nfi = new NumberFormatInfo
+                {
+                    NumberDecimalSeparator = "."
+                };
 
                 string sTypeValue = elementValue.Substring(1, rightBracketPos - 1).ToUpper();
                 string sValue = elementValue.Substring(rightBracketPos + 1);
@@ -400,18 +431,17 @@ namespace KEPServerSenderService
 
         private bool WriteToKEPServer(Session AMSession, SenderJobProps job)
         {
-            SenderMonitorEvent.sendMonitorEvent(vpEventLog, String.Format("Step 2 -- Read the value of a node representing a PI Point data under the hood: {0}. ", job.Command), EventLogEntryType.Information);
             // Step 2 -- Read the value of a node representing a PI Point data under the hood
             NodeId nodeToRead = new NodeId(job.Command/*Element*/, 2);
-            Node node = AMSession.NodeCache.Find(nodeToRead) as Node;            
 
-            if (node != null)
+            if (AMSession.NodeCache.Find(nodeToRead) is Node node)
             {
                 DataValue value = AMSession.ReadValue(nodeToRead);
-                SenderMonitorEvent.sendMonitorEvent(vpEventLog, String.Format("AMSession.ReadValue: {0}. ", value), EventLogEntryType.Information);
-                WriteValue Wvalue = new WriteValue();
-                Wvalue.NodeId = nodeToRead;
-                Wvalue.AttributeId = Attributes.Value;
+                WriteValue Wvalue = new WriteValue
+                {
+                    NodeId = nodeToRead,
+                    AttributeId = Attributes.Value
+                };
 
                 if ((node.NodeClass & (NodeClass.Variable | NodeClass.VariableType)) == 0)
                 {
@@ -421,21 +451,20 @@ namespace KEPServerSenderService
                 Wvalue.IndexRange = null;
                 Wvalue.Value = value;
                 Wvalue.Value.Value = ConvertToObject(job.CommandRule);
-                SenderMonitorEvent.sendMonitorEvent(vpEventLog, String.Format("Wvalue.Value.Value: {0}. ", Wvalue.Value.Value), EventLogEntryType.Information);
+                
                 if (Wvalue.Value.Value != null)
                 {
-                    WriteValueCollection nodesToWrite = new WriteValueCollection();
-                    nodesToWrite.Add(Wvalue);
+                    WriteValueCollection nodesToWrite = new WriteValueCollection
+                    {
+                        Wvalue
+                    };
 
-                    StatusCodeCollection results = null;
-                    DiagnosticInfoCollection diagnosticInfos = null;
-                    SenderMonitorEvent.sendMonitorEvent(vpEventLog, String.Format("Write: {0}. ", nodesToWrite), EventLogEntryType.Information);
                     ResponseHeader responseHeader = AMSession.Write(
                             null,
                             nodesToWrite,
-                            out results,
-                            out diagnosticInfos);
-                    SenderMonitorEvent.sendMonitorEvent(vpEventLog, String.Format("ResponseHeader: {0}. ", responseHeader), EventLogEntryType.Information);
+                            out StatusCodeCollection results,
+                            out DiagnosticInfoCollection diagnosticInfos);
+
                     Session.ValidateResponse(results, nodesToWrite);
                     //Session.ValidateDiagnosticInfos(diagnosticInfos, nodesToWrite);
 
@@ -445,19 +474,19 @@ namespace KEPServerSenderService
                     }
                     else
                     {
-                        SenderMonitorEvent.sendMonitorEvent(vpEventLog, String.Format("Can not send command to KEP Server. ErrorCode: {0}. ErrorText: {1}. Job order ID: {2}", results[0].Code, results[0].ToString(), job.JobOrderID), EventLogEntryType.Error);
+                        SenderMonitorEvent.SendMonitorEvent(EventLog, string.Format("Can not send command to KEP Server. ErrorCode: {0}. ErrorText: {1}. Job order ID: {2}", results[0].Code, results[0].ToString(), job.JobOrderID), EventLogEntryType.Error, 5);
                         return false;
                     }
                 }
                 else
                 {
-                    SenderMonitorEvent.sendMonitorEvent(vpEventLog, String.Format("Can not convert command value: {0}. Job order ID: {1}", job.CommandRule, job.JobOrderID), EventLogEntryType.Error);
+                    SenderMonitorEvent.SendMonitorEvent(EventLog, string.Format("Can not convert command value: {0}. Job order ID: {1}", job.CommandRule, job.JobOrderID), EventLogEntryType.Error, 5);
                     return false;
                 }
             }
             else
             {
-                SenderMonitorEvent.sendMonitorEvent(vpEventLog, String.Format("Item not found: {0}. Job order ID: ", job.Command, job.JobOrderID), EventLogEntryType.Error);
+                SenderMonitorEvent.SendMonitorEvent(EventLog, string.Format("Command not valid: {0}. Job order ID: {1}", job.Command, job.JobOrderID), EventLogEntryType.Error, 5);
                 return false;
             }
         }
@@ -480,7 +509,7 @@ namespace KEPServerSenderService
     /// </summary>
     public class KEPSSenderdbData
     {
-        private string webServiceUrl;
+        private readonly string webServiceUrl;
 
         /// <summary>	Constructor. </summary>
         ///
@@ -493,7 +522,7 @@ namespace KEPServerSenderService
         /// <summary>
         /// Get KEP Server commands jobs to process
         /// </summary>
-        public JobOrders getJobsToProcess()
+        public JobOrders GetJobsToProcess()
         {
             return new JobOrders(webServiceUrl, "KEPCommands", "ToSend");
         }

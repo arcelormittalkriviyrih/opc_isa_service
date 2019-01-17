@@ -42,6 +42,24 @@ namespace KEPServerSenderService
 		{
 			this.senderJobs.StopJob();
         }
+
         #endregion
+
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (components != null)
+                    components.Dispose();
+
+                if (senderJobs != null)
+                    senderJobs.Dispose();
+            }
+            base.Dispose(disposing);
+        }
     }
 }

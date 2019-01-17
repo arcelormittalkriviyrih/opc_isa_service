@@ -12,9 +12,9 @@ namespace CommonEventSender
     /// </summary>
     public class SenderMonitorEvent
     {
-        private string message;
+        private readonly string message;
         private EventLogEntryType eventType;
-        private DateTime eventTime;
+        private readonly DateTime eventTime;
 
         /// <summary>
         /// Text of event massage
@@ -38,31 +38,39 @@ namespace CommonEventSender
             get { return eventTime; }
         }
 
-        public SenderMonitorEvent(EventLog eventLog, string message, EventLogEntryType eventType)
+        public SenderMonitorEvent(EventLog eventLog, string message, EventLogEntryType eventType, int eventID)
         {
             this.message = message;
             this.eventType = eventType;
             eventTime = DateTime.Now;
             if (eventLog != null)
             {
-                eventLog.WriteEntry(message, eventType);
+                eventLog.WriteEntry(message, eventType, eventID);
             }
         }
 
         /// <summary>
         /// Create and fire event
         /// </summary>
-        public static void sendMonitorEvent(EventLog eventLog, string message, EventLogEntryType eventType)
+        public static void SendMonitorEvent(EventLog eventLog, string message, EventLogEntryType eventType, int eventID)
         {
-            SenderMonitorEvent MonitorEvent = new SenderMonitorEvent(eventLog, message, eventType);
+            SenderMonitorEvent MonitorEvent = new SenderMonitorEvent(eventLog, message, eventType, eventID);
             try
             {
                 Instrumentation.Fire(MonitorEvent);
             }
-            catch (Exception ex)
+            catch //(Exception ex)
             {
                 //new SenderMonitorEvent(eventLog, ex.ToString(), EventLogEntryType.Error);
             }
+        }
+
+        /// <summary>
+        /// Create and fire event
+        /// </summary>
+        public static void SendMonitorEvent(EventLog eventLog, string message, EventLogEntryType eventType)
+        {
+            SendMonitorEvent(eventLog, message, eventType, 0);
         }
     }
 }
@@ -75,14 +83,14 @@ namespace PrintWindowsService
     /// </summary>
     public class PrintServiceProductInfo
     {
-        private string prAppName;
-        private string prComputerName;
-        private string prVersion;
-        private DateTime prStartTime;
+        private readonly string prAppName;
+        private readonly string prComputerName;
+        private readonly string prVersion;
+        private readonly DateTime prStartTime;
         //private int prPrintTaskFrequencyInSeconds;
         //private int prPingTimeoutInSeconds;
         //private string prDBConnectionString;
-        private string prOdataServiceUrl;
+        private readonly string prOdataServiceUrl;
         private DateTime prLastActivityTime;
         private string prLastServiceError;
         private int prPrintedLabelsCount;
@@ -203,12 +211,12 @@ namespace KEPServerSenderService
     /// </summary>
     public class KEPSenderServiceProductInfo
     {
-        private string prAppName;
-        private string prComputerName;
-        private string prVersion;
-        private DateTime prStartTime;
-        private int prSendCommandFrequencyInSeconds;
-        private string prOdataServiceUrl;
+        private readonly string prAppName;
+        private readonly string prComputerName;
+        private readonly string prVersion;
+        private readonly DateTime prStartTime;
+        private readonly int prSendCommandFrequencyInSeconds;
+        private readonly string prOdataServiceUrl;
         private DateTime prLastActivityTime;
         private string prLastServiceError;
         private int prSendCommandsCount;
