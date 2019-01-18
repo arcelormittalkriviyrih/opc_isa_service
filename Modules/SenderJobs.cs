@@ -437,6 +437,8 @@ namespace KEPServerSenderService
             if (AMSession.NodeCache.Find(nodeToRead) is Node node)
             {
                 DataValue value = AMSession.ReadValue(nodeToRead);
+                value.ServerTimestamp = new DateTime(0);
+                value.SourceTimestamp = new DateTime(0);
                 WriteValue Wvalue = new WriteValue
                 {
                     NodeId = nodeToRead,
